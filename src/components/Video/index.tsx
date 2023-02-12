@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
 
@@ -26,12 +26,14 @@ export interface VideoProps {
 export const Video = ({id}: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const [loadedMetadata, setLoadedMetadata] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [lang, setLang] = useState(SubtitleLang.off);
   const [showControls, setShowControls] = useState(true);
   const [availableTracks, setAvailableTracks] = useState<SubtitleLang[]>([]);
+  const [fullscreen, setFullscreen] = useState(false);
  
   const handlePlay = (play: boolean) => {
     const video = videoRef.current;
@@ -70,9 +72,48 @@ export const Video = ({id}: VideoProps) => {
 
   };
 
-  const handleFullscreen = (fullscreen: boolean) => {
-
+  const handleFullscreen = () => {
+    const fullscreenContainer = videoContainerRef.current;
+    if(!fullscreenContainer) return;
+    if(!fullscreen) {
+      if(fullscreenContainer.requestFullscreen) {
+        fullscreenContainer.requestFullscreen({ navigationUI: 'hide' });
+        setFullscreen(true);
+        window.screen.orientation.lock('landscape').catch(e => console.log(e));
+      } if((fullscreenContainer as any).webkitRequestFullscreen) {
+        (fullscreenContainer as any).webkitRequestFullscreen({ navigationUI: 'hide' });
+        setFullscreen(true);
+        window.screen.orientation.lock('landscape').catch(e => console.log(e));
+      }
+    } else {
+      if(document.exitFullscreen) {
+        document.exitFullscreen();
+        setFullscreen(false);
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+        setFullscreen(false);
+      }
+    }
   };
+
+  useEffect(() => {
+    // when close fullscreen with browser function like esc/back/etc
+    const fullscreenContainer = videoContainerRef.current;
+
+    const handleFullscreenChange = (e: Event) => {
+      if(!(document.fullscreenElement || (document as any).webkitFullscreenElement)) {
+        setFullscreen(false);
+      }
+    };
+
+    fullscreenContainer?.addEventListener('fullscreenchange', handleFullscreenChange);
+    fullscreenContainer?.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      fullscreenContainer?.removeEventListener('fullscreenchange', handleFullscreenChange);
+      fullscreenContainer?.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const handleLoadedMetadata = () => {
     setLoadedMetadata(true);
@@ -105,8 +146,9 @@ export const Video = ({id}: VideoProps) => {
 
   return (
     <div
-      className={`relative ${!showControls ? 'cursor-none' : ''}`}
+      className={`relative flex items-center bg-black ${!showControls ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
+      ref={videoContainerRef}
     >
       <div>
         <video
@@ -126,6 +168,7 @@ export const Video = ({id}: VideoProps) => {
             duration={duration}
             availableLangs={availableTracks}
             lang={lang}
+            fullscreen={fullscreen}
             onPlay={handlePlay}
             onChangeTime={handleChangeTime}
             onReleaseTime={handleReleaseTime}

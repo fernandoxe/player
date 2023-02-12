@@ -30,12 +30,13 @@ export interface ControlsProps {
   duration: number;
   availableLangs: SubtitleLang[];
   lang: SubtitleLang;
+  fullscreen: boolean;
   onPlay: (play: boolean) => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
   onChangeSubtitles: (lang: SubtitleLang) => void;
   onConnect: () => void;
-  onFullscreen: (fullscreen: boolean) => void;
+  onFullscreen: () => void;
 }
 
 export const Controls = ({
@@ -43,6 +44,7 @@ export const Controls = ({
   duration,
   availableLangs,
   lang,
+  fullscreen,
   onPlay,
   onChangeTime,
   onReleaseTime,
@@ -51,7 +53,6 @@ export const Controls = ({
   onFullscreen
 }: ControlsProps) => {
   const [isPLay, setIsPlay] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(true);
   const [showSubtitlesMenu, setShowSubtitlesMenu] = useState(false);
   
   const handlePlay = () => {
@@ -70,9 +71,7 @@ export const Controls = ({
   };
 
   const handleFullscreen = () => {
-    const newIsFullscreen = !isFullscreen;
-    setIsFullscreen(newIsFullscreen);
-    onFullscreen(!newIsFullscreen);
+    onFullscreen();
   };
 
   const handleChangeLang = (lang: SubtitleLang) => {
@@ -128,10 +127,10 @@ export const Controls = ({
             className="outline-none"
             onClick={handleFullscreen}
           >
-            {isFullscreen &&
+            {!fullscreen &&
               <FullscreenIcon />
             }
-            {!isFullscreen &&
+            {fullscreen &&
               <FullscreenExitIcon />
             }
           </button>
