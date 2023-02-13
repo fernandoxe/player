@@ -30,8 +30,9 @@ export interface ControlsProps {
   duration: number;
   availableLangs: SubtitleLang[];
   lang: SubtitleLang;
+  play: boolean;
   fullscreen: boolean;
-  onPlay: (play: boolean) => void;
+  onPlay: () => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
   onChangeSubtitles: (lang: SubtitleLang) => void;
@@ -44,6 +45,7 @@ export const Controls = ({
   duration,
   availableLangs,
   lang,
+  play,
   fullscreen,
   onPlay,
   onChangeTime,
@@ -52,13 +54,10 @@ export const Controls = ({
   onConnect,
   onFullscreen
 }: ControlsProps) => {
-  const [isPLay, setIsPlay] = useState(true);
   const [showSubtitlesMenu, setShowSubtitlesMenu] = useState(false);
   
   const handlePlay = () => {
-    const newIsPlay = !isPLay;
-    setIsPlay(newIsPlay);
-    onPlay(!newIsPlay);
+    onPlay();
   };
 
   const handleSubtitles = () => {
@@ -95,10 +94,10 @@ export const Controls = ({
             className="outline-none"
             onClick={handlePlay}
           >
-            {isPLay &&
+            {!play &&
               <PlayIcon />
             }
-            {!isPLay &&
+            {play &&
               <PauseIcon />
             }
           </button>
@@ -137,7 +136,7 @@ export const Controls = ({
         </div>
       </div>
       {showSubtitlesMenu &&
-        <div className="absolute bottom-10 right-0">
+        <div className="absolute bottom-[3.25rem] right-0">
           <SubtitlesMenu
             availableLangs={availableLangs}
             lang={lang}

@@ -33,14 +33,17 @@ export const Video = ({id}: VideoProps) => {
   const [lang, setLang] = useState(SubtitleLang.off);
   const [showControls, setShowControls] = useState(true);
   const [availableTracks, setAvailableTracks] = useState<SubtitleLang[]>([]);
+  const [play, setPlay] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
  
-  const handlePlay = (play: boolean) => {
+  const handlePlay = () => {
     const video = videoRef.current;
-    if(play) {
+    if(video?.paused) {
       video?.play();
+      setPlay(true);
     } else {
       video?.pause();
+      setPlay(false);
     }
   };
 
@@ -99,19 +102,41 @@ export const Video = ({id}: VideoProps) => {
   useEffect(() => {
     // when close fullscreen with browser function like esc/back/etc
     const fullscreenContainer = videoContainerRef.current;
-
     const handleFullscreenChange = (e: Event) => {
       if(!(document.fullscreenElement || (document as any).webkitFullscreenElement)) {
         setFullscreen(false);
       }
     };
-
     fullscreenContainer?.addEventListener('fullscreenchange', handleFullscreenChange);
     fullscreenContainer?.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    // control keys
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if(e.key === ' ' || e.code === 'Space') {
+        console.log('key up space', e.key);
+        handlePlay();
+      } else if (e.code === 'ArrowLeft' || e.code === 'ArrowLeft') {
+        console.log('key up left', e.key);
+        const video = videoRef.current;
+        if(video) {
+          video.currentTime -= 10;
+          console.log(video.currentTime);
+        }
+      } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+        console.log('key up right', e.key);
+        const video = videoRef.current;
+        if(video) {
+          video.currentTime += 10;
+          console.log(video.currentTime);
+        }
+      }
+    };
+    document.addEventListener('keyup', handleKeyUp);
 
     return () => {
       fullscreenContainer?.removeEventListener('fullscreenchange', handleFullscreenChange);
       fullscreenContainer?.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
 
@@ -168,6 +193,7 @@ export const Video = ({id}: VideoProps) => {
             duration={duration}
             availableLangs={availableTracks}
             lang={lang}
+            play={play}
             fullscreen={fullscreen}
             onPlay={handlePlay}
             onChangeTime={handleChangeTime}
