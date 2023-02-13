@@ -4,6 +4,8 @@ import { ReactComponent as GroupIcon } from '../../icons/group_fill.svg';
 import { ReactComponent as SubtitlesIcon } from '../../icons/subtitles_fill.svg';
 import { ReactComponent as FullscreenIcon } from '../../icons/fullscreen_fill.svg';
 import { ReactComponent as FullscreenExitIcon } from '../../icons/fullscreen_exit_fill.svg';
+import { ReactComponent as FirstPageIcon } from '../../icons/first_page_fill.svg';
+import { ReactComponent as LastPageIcon } from '../../icons/last_page_fill.svg';
 import { useState } from 'react';
 import { SubtitlesMenu } from './SubtitlesMenu';
 import { SubtitleLang } from '../../interfaces';
@@ -38,6 +40,8 @@ export interface ControlsProps {
   onChangeSubtitles: (lang: SubtitleLang) => void;
   onConnect: () => void;
   onFullscreen: () => void;
+  onRewind: () => void;
+  onForward: () => void;
 }
 
 export const Controls = ({
@@ -52,7 +56,9 @@ export const Controls = ({
   onReleaseTime,
   onChangeSubtitles,
   onConnect,
-  onFullscreen
+  onFullscreen,
+  onRewind,
+  onForward,
 }: ControlsProps) => {
   const [showSubtitlesMenu, setShowSubtitlesMenu] = useState(false);
   
@@ -86,8 +92,16 @@ export const Controls = ({
     onReleaseTime(time);
   };
 
+  const handleRewind = () => {
+    onRewind();
+  };
+
+  const handleForward = () => {
+    onForward();
+  };
+
   return (
-    <div className="flex flex-col gap-2 p-2 bg-purple-900 bg-opacity-30 absolute left-0 bottom-0 w-full select-none">
+    <div className="flex flex-col gap-2 p-2 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6">
           <button
@@ -102,10 +116,26 @@ export const Controls = ({
             }
           </button>
         </div>
-        <div className="grow text-xs">
+        <div className="text-xs">
           {getTime(currentTime, duration)}
         </div>
         <div className="w-6 h-6">
+          <button
+            className="outline-none"
+            onClick={handleRewind}
+          >
+            <FirstPageIcon />
+          </button>
+        </div>
+        <div className="w-6 h-6">
+          <button
+            className="outline-none"
+            onClick={handleForward}
+          >
+            <LastPageIcon />
+          </button>
+        </div>
+        <div className="w-6 h-6 grow flex justify-end">
           <button
             className="outline-none"
             onClick={handleConnect}

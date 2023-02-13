@@ -169,6 +169,22 @@ export const Video = ({id}: VideoProps) => {
     }, 2000);
   };
 
+  const handleRewind = () => {
+    const video = videoRef.current;
+    if(video) {
+      video.currentTime -= 10;
+      console.log(video.currentTime);
+    }
+  };
+
+  const handleForward = () => {
+    const video = videoRef.current;
+    if(video) {
+      video.currentTime += 10;
+      console.log(video.currentTime);
+    }
+  };
+
   return (
     <div
       className={`relative flex items-center bg-black ${!showControls ? 'cursor-none' : ''}`}
@@ -201,6 +217,8 @@ export const Video = ({id}: VideoProps) => {
             onConnect={handleConnect}
             onChangeSubtitles={handleChangeSubtitles}
             onFullscreen={handleFullscreen}
+            onRewind={handleRewind}
+            onForward={handleForward}
           />
         </div>
       }
