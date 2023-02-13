@@ -101,7 +101,7 @@ export const Controls = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-2 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none">
+    <div className="flex flex-col gap-2 p-2 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6">
           <button
@@ -137,7 +137,7 @@ export const Controls = ({
         </div>
         <div className="w-6 h-6 grow flex justify-end">
           <button
-            className="outline-none"
+            className="outline-none w-6"
             onClick={handleConnect}
           >
             <GroupIcon />
