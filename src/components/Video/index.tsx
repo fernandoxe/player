@@ -50,6 +50,7 @@ export const Video = ({id}: VideoProps) => {
   const handleChangeTime = (time: number) => {
     if(videoRef.current) videoRef.current.currentTime = time;
     console.log('changed time to', videoRef.current?.currentTime);
+    handleMouseMove(); // to show controls on progress change from touch devices
   };
 
   const handleReleaseTime = (time: number) => {
@@ -119,14 +120,14 @@ export const Video = ({id}: VideoProps) => {
         console.log('key up left', e.key);
         const video = videoRef.current;
         if(video) {
-          video.currentTime -= 10;
+          video.currentTime -= 5;
           console.log(video.currentTime);
         }
       } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
         console.log('key up right', e.key);
         const video = videoRef.current;
         if(video) {
-          video.currentTime += 10;
+          video.currentTime += 5;
           console.log(video.currentTime);
         }
       }
@@ -172,7 +173,7 @@ export const Video = ({id}: VideoProps) => {
   const handleRewind = () => {
     const video = videoRef.current;
     if(video) {
-      video.currentTime -= 10;
+      video.currentTime -= 5;
       console.log(video.currentTime);
     }
   };
@@ -180,7 +181,7 @@ export const Video = ({id}: VideoProps) => {
   const handleForward = () => {
     const video = videoRef.current;
     if(video) {
-      video.currentTime += 10;
+      video.currentTime += 5;
       console.log(video.currentTime);
     }
   };
@@ -189,6 +190,7 @@ export const Video = ({id}: VideoProps) => {
     <div
       className={`relative flex items-center bg-black ${!showControls ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
+      // onTouchStart={handleMouseMove}
       ref={videoContainerRef}
     >
       <div>
@@ -202,7 +204,7 @@ export const Video = ({id}: VideoProps) => {
           <track src={`${MEDIA_HOST}/media/${id}.en.vtt`} kind="subtitles" srcLang="en" />
         </video>
       </div>
-      {loadedMetadata &&
+      {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
           <Controls
             currentTime={currentTime}
