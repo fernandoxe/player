@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 import { SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
+import { EditUser } from '../EditUser';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
 
@@ -27,6 +29,7 @@ export const Video = ({id}: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [loadedMetadata, setLoadedMetadata] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -35,14 +38,15 @@ export const Video = ({id}: VideoProps) => {
   const [availableTracks, setAvailableTracks] = useState<SubtitleLang[]>([]);
   const [play, setPlay] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [showEditUser, setShowEditUser] = useState(false);
  
   const handlePlay = () => {
     const video = videoRef.current;
     if(video?.paused) {
-      video?.play();
+      playVideo();
       setPlay(true);
     } else {
-      video?.pause();
+      pauseVideo();
       setPlay(false);
     }
   };
@@ -73,7 +77,45 @@ export const Video = ({id}: VideoProps) => {
   };
 
   const handleConnect = () => {
+    const username = localStorage.getItem('username');
+    if(!username && !socketRef.current) {
+      setShowEditUser(true);
+      return;
+    }
+    if(!socketRef.current) socketRef.current = io('http://localhost:5000');
 
+    socketRef.current.on('connect', () => {
+      console.log('connected');
+      emit('join', {room: 'Anti-Hero', user: username});
+    });
+
+    socketRef.current.on('user-connected', (message) => {
+      console.log(`User ${message.user} has connected to this room`);
+    });
+
+    socketRef.current.on('play', (message) => {
+      console.log('user plays', message.user);
+      playVideo();
+    });
+
+    socketRef.current.on('pause', (message) => {
+      console.log('user paused', message.user);
+      pauseVideo();
+    });
+  };
+  
+  const playVideo = () => {
+    videoRef.current?.play();
+    emit('play', {user: 'user'});
+  };
+
+  const pauseVideo = () => {
+    videoRef.current?.pause();
+    emit('pause', {user: 'user'});
+  };
+
+  const emit = (message: string, data?: any) => {
+    socketRef.current?.emit(message, data);
   };
 
   const handleFullscreen = () => {
@@ -186,6 +228,12 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
+  const handleEditUser = (user: string) => {
+    localStorage.setItem('username', user);
+    setShowEditUser(false);
+    handleConnect();
+  };
+
   return (
     <div
       className={`relative flex items-center bg-black ${!showControls ? 'cursor-none' : ''}`}
@@ -213,6 +261,7 @@ export const Video = ({id}: VideoProps) => {
             lang={lang}
             play={play}
             fullscreen={fullscreen}
+            connect={'disconnected'}
             onPlay={handlePlay}
             onChangeTime={handleChangeTime}
             onReleaseTime={handleReleaseTime}
@@ -223,6 +272,11 @@ export const Video = ({id}: VideoProps) => {
             onForward={handleForward}
           />
         </div>
+      }
+      {showEditUser &&
+        <EditUser
+          onChange={handleEditUser}
+        />
       }
     </div>
   );
