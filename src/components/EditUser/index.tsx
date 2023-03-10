@@ -24,7 +24,7 @@ export const EditUser = ({onChange}: EditUserProps) => {
       <form onSubmit={handleUserAccept}>
         <div className="flex items-center gap-2 rounded-lg max-w-xs bg-slate-500 p-4">
           <input
-            className="px-2 py-1 outline-none"
+            className="px-2 py-1 outline-none text-gray-900"
             type="text"
             value={user}
             onChange={handleUserChange}
@@ -33,6 +33,7 @@ export const EditUser = ({onChange}: EditUserProps) => {
           <div className="w-6 h-6">
             <button
               className="outline-none"
+              disabled={!user}
             >
               <ArrowRightIcon />
             </button>
