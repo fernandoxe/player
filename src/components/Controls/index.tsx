@@ -34,6 +34,7 @@ export interface ControlsProps {
   lang: SubtitleLang;
   play: boolean;
   fullscreen: boolean;
+  connect: 'connected' | 'connecting' | 'disconnected' | 'error';
   onPlay: () => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
