@@ -39,15 +39,16 @@ export const Video = ({id}: VideoProps) => {
   const [play, setPlay] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
- 
+  
   const handlePlay = () => {
     const video = videoRef.current;
+    const username = localStorage.getItem('username') || '';
     if(video?.paused) {
       playVideo();
-      setPlay(true);
+      emit('play', {user: username});
     } else {
       pauseVideo();
-      setPlay(false);
+      emit('pause', {user: username});
     }
   };
 
@@ -77,7 +78,7 @@ export const Video = ({id}: VideoProps) => {
   };
 
   const handleConnect = () => {
-    const username = localStorage.getItem('username');
+    const username = localStorage.getItem('username') || '';
     if(!username && !socketRef.current) {
       setShowEditUser(true);
       return;
@@ -105,13 +106,13 @@ export const Video = ({id}: VideoProps) => {
   };
   
   const playVideo = () => {
+    setPlay(true);
     videoRef.current?.play();
-    emit('play', {user: 'user'});
   };
 
   const pauseVideo = () => {
+    setPlay(false);
     videoRef.current?.pause();
-    emit('pause', {user: 'user'});
   };
 
   const emit = (message: string, data?: any) => {
