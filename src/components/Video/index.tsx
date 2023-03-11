@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
@@ -39,27 +39,51 @@ export const Video = ({id}: VideoProps) => {
   const [play, setPlay] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
-  
-  const handlePlay = () => {
-    const video = videoRef.current;
-    const username = localStorage.getItem('username') || '';
-    if(video?.paused) {
-      playVideo();
-      emit('play', {user: username});
-    } else {
-      pauseVideo();
-      emit('pause', {user: username});
-    }
-  };
 
-  const handleChangeTime = (time: number) => {
-    if(videoRef.current) videoRef.current.currentTime = time;
-    console.log('changed time to', videoRef.current?.currentTime);
-    handleMouseMove(); // to show controls on progress change from touch devices
-  };
+  const playVideo = useCallback(() => {
+    setPlay(true);
+    videoRef.current?.play();
+    handleMouseMove();
+  }, []);
+
+  const pauseVideo = useCallback(() => {
+    setPlay(false);
+    videoRef.current?.pause();
+    handleMouseMove();
+  }, []);
+  
+  const handlePlay = useCallback((fromKey?: string) => {
+    const video = videoRef.current;
+    console.log(fromKey, 'paused?', video?.paused);
+    if(video?.paused) {
+      console.log('handle play play');
+      playVideo();
+      emit('play');
+    } else {
+      console.log('handle play pause');
+      pauseVideo();
+      emit('pause');
+    }
+  }, [playVideo, pauseVideo]);
+
+  const changeTime = useCallback((time: number) => {
+    if(videoRef.current) {
+      videoRef.current.currentTime = time;
+      handleMouseMove(); // to show controls on progress change from touch devices
+    }
+  }, []);
+
+  const handleChangeTime = useCallback((time: number) => {
+    if(videoRef.current) {
+      changeTime(time);
+      emit('change-time', {currentTime: time});
+      console.log('changed time to', videoRef.current?.currentTime);
+    }
+  }, [changeTime]);
 
   const handleReleaseTime = (time: number) => {
     console.log('relesased time at', time);
+    emit('change-time', {currentTime: time});
   };
 
   const handleChangeSubtitles = (lang: SubtitleLang) => {
@@ -87,7 +111,7 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('connect', () => {
       console.log('connected');
-      emit('join', {room: 'Anti-Hero', user: username});
+      emit('join', {room: 'Anti-Hero'});
     });
 
     socketRef.current.on('user-connected', (message) => {
@@ -103,20 +127,18 @@ export const Video = ({id}: VideoProps) => {
       console.log('user paused', message.user);
       pauseVideo();
     });
-  };
-  
-  const playVideo = () => {
-    setPlay(true);
-    videoRef.current?.play();
-  };
 
-  const pauseVideo = () => {
-    setPlay(false);
-    videoRef.current?.pause();
+    socketRef.current.on('change-time', (message) => {
+      console.log('user changed time', message.currentTime, message.user);
+      changeTime(message.currentTime);
+    });
   };
 
   const emit = (message: string, data?: any) => {
-    socketRef.current?.emit(message, data);
+    if(socketRef.current) {
+      const username = localStorage.getItem('username') || '';
+      socketRef.current.emit(message, {user: username, ...data});
+    }
   };
 
   const handleFullscreen = () => {
@@ -143,10 +165,26 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
+  const handleRewind = useCallback(() => {
+    const video = videoRef.current;
+    if(video) {
+      handleChangeTime(video.currentTime - 5);
+      console.log(video.currentTime);
+    }
+  }, [handleChangeTime]);
+
+  const handleForward = useCallback(() => {
+    const video = videoRef.current;
+    if(video) {
+      handleChangeTime(video.currentTime + 5);
+      console.log(video.currentTime);
+    }
+  }, [handleChangeTime]);
+
   useEffect(() => {
     // when close fullscreen with browser function like esc/back/etc
     const fullscreenContainer = videoContainerRef.current;
-    const handleFullscreenChange = (e: Event) => {
+    const handleFullscreenChange = () => {
       if(!(document.fullscreenElement || (document as any).webkitFullscreenElement)) {
         setFullscreen(false);
       }
@@ -156,23 +194,14 @@ export const Video = ({id}: VideoProps) => {
 
     // control keys
     const handleKeyUp = (e: KeyboardEvent) => {
+      e.preventDefault();
+      console.log('key up', e.key);
       if(e.key === ' ' || e.code === 'Space') {
-        console.log('key up space', e.key);
-        handlePlay();
+        handlePlay('from key');
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowLeft') {
-        console.log('key up left', e.key);
-        const video = videoRef.current;
-        if(video) {
-          video.currentTime -= 5;
-          console.log(video.currentTime);
-        }
+        handleRewind();
       } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
-        console.log('key up right', e.key);
-        const video = videoRef.current;
-        if(video) {
-          video.currentTime += 5;
-          console.log(video.currentTime);
-        }
+        handleForward();
       }
     };
     document.addEventListener('keyup', handleKeyUp);
@@ -182,7 +211,7 @@ export const Video = ({id}: VideoProps) => {
       fullscreenContainer?.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handlePlay, handleForward, handleRewind]);
 
   const handleLoadedMetadata = () => {
     setLoadedMetadata(true);
@@ -211,22 +240,6 @@ export const Video = ({id}: VideoProps) => {
     timeoutRef.current = setTimeout(() => {
       setShowControls(false);
     }, 2000);
-  };
-
-  const handleRewind = () => {
-    const video = videoRef.current;
-    if(video) {
-      video.currentTime -= 5;
-      console.log(video.currentTime);
-    }
-  };
-
-  const handleForward = () => {
-    const video = videoRef.current;
-    if(video) {
-      video.currentTime += 5;
-      console.log(video.currentTime);
-    }
   };
 
   const handleEditUser = (user: string) => {
