@@ -6,7 +6,7 @@ import { ReactComponent as FullscreenIcon } from '../../icons/fullscreen_fill.sv
 import { ReactComponent as FullscreenExitIcon } from '../../icons/fullscreen_exit_fill.svg';
 import { ReactComponent as FirstPageIcon } from '../../icons/first_page_fill.svg';
 import { ReactComponent as LastPageIcon } from '../../icons/last_page_fill.svg';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { SubtitlesMenu } from './SubtitlesMenu';
 import { SubtitleLang } from '../../interfaces';
 import { Progress } from './Progress';
@@ -89,9 +89,9 @@ export const Controls = ({
     onChangeTime(time);
   };
 
-  const handleProgressRelease = (time: number) => {
+  const handleProgressRelease = useCallback((time: number) => {
     onReleaseTime(time);
-  };
+  }, [onReleaseTime]);
 
   const handleRewind = () => {
     onRewind();

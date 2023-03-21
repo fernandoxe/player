@@ -27,7 +27,7 @@ export const Progress = ({currentTime, duration, onChange, onRelease}: ProgressP
     return () => {
       range?.removeEventListener('change', handleRelease);
     };
-  }, []);
+  }, [onRelease]);
 
   useEffect(() => {
     setValue(currentTime);

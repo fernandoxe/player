@@ -5,6 +5,7 @@ import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
+const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
 
 export interface VideoProps {
   id: string;
@@ -81,10 +82,10 @@ export const Video = ({id}: VideoProps) => {
     }
   }, [changeTime]);
 
-  const handleReleaseTime = (time: number) => {
+  const handleReleaseTime = useCallback((time: number) => {
     console.log('relesased time at', time);
     emit('change-time', {currentTime: time});
-  };
+  }, []);
 
   const handleChangeSubtitles = (lang: SubtitleLang) => {
     setLang(lang);
@@ -107,7 +108,7 @@ export const Video = ({id}: VideoProps) => {
       setShowEditUser(true);
       return;
     }
-    if(!socketRef.current) socketRef.current = io('http://localhost:5000');
+    if(!socketRef.current) socketRef.current = io(WEBSOCKETS_HOST);
 
     socketRef.current.on('connect', () => {
       console.log('connected');
