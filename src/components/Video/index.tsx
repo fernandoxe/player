@@ -261,6 +261,7 @@ export const Video = ({id}: VideoProps) => {
           ref={videoRef}
           onLoadedMetadata={handleLoadedMetadata}
           onTimeUpdate={handleTimeUpdate}
+          crossOrigin="anonymous"
         >
           <source src={`${MEDIA_HOST}/media/${id}.mp4`} type="video/mp4" />
           <track src={`${MEDIA_HOST}/media/${id}.es.vtt`} kind="subtitles" srcLang="es" />
