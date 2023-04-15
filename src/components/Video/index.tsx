@@ -260,7 +260,7 @@ export const Video = ({id}: VideoProps) => {
       // onTouchStart={handleMouseMove}
       ref={videoContainerRef}
     >
-      <div className="w-full">
+      <div className="w-full h-full flex justify-center">
         <video
           ref={videoRef}
           onLoadedMetadata={handleLoadedMetadata}
