@@ -51,7 +51,11 @@ export const Video = ({id}: VideoProps) => {
     setPlay(false);
     videoRef.current?.pause();
     handleMouseMove();
-  }, []);
+    const pausedTimes = localStorage.getItem('pausedTimes') || '{}';
+    const parsedPausedTimes = JSON.parse(pausedTimes);
+    parsedPausedTimes[id] = Math.floor(videoRef.current?.currentTime || 0);
+    localStorage.setItem('pausedTimes', JSON.stringify(parsedPausedTimes));
+  }, [id]);
   
   const handlePlay = useCallback((fromKey?: string) => {
     const video = videoRef.current;
@@ -216,7 +220,11 @@ export const Video = ({id}: VideoProps) => {
 
   const handleLoadedMetadata = () => {
     setLoadedMetadata(true);
-    // if(videoRef.current) videoRef.current.currentTime = 8; // TODO: remove
+    if(videoRef.current) {
+      const pausedTimes = localStorage.getItem('pausedTimes') || '{}';
+      const parsedPausedTimes = JSON.parse(pausedTimes);
+      videoRef.current.currentTime = Number(parsedPausedTimes[id] || 0) - 5;
+    } 
     console.log(videoRef.current?.currentTime);
     setCurrentTime(videoRef.current?.currentTime ?? 0);
     setDuration(videoRef.current?.duration ?? 0);
