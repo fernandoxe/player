@@ -102,7 +102,7 @@ export const Controls = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-2 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
+    <div className="flex flex-col gap-4 px-2 py-4 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6">
           <button

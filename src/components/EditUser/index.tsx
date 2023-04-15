@@ -3,9 +3,10 @@ import { ReactComponent as ArrowRightIcon } from '../../icons/arrow_right_fill.s
 
 export interface EditUserProps {
   onChange: (user: string) => void;
+  onClose: () => void;
 }
 
-export const EditUser = ({onChange}: EditUserProps) => {
+export const EditUser = ({onChange, onClose}: EditUserProps) => {
   const [user, setUser] = useState('');
 
   const handleUserChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -20,9 +21,15 @@ export const EditUser = ({onChange}: EditUserProps) => {
   };
 
   return (
-    <div className="flex items-center justify-center fixed top-0 right-0 bottom-0 left-0 bg-slate-900 bg-opacity-70 z-[1]">
+    <div
+      className="flex items-center justify-center fixed top-0 right-0 bottom-0 left-0 bg-slate-900 bg-opacity-75 z-[1]"
+      onClick={onClose}
+    >
       <form onSubmit={handleUserAccept}>
-        <div className="flex items-center gap-2 rounded-lg max-w-xs bg-slate-500 p-4">
+        <div
+          className="flex items-center gap-2 rounded-lg max-w-xs bg-slate-500 p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
           <input
             className="px-2 py-1 outline-none text-gray-900"
             type="text"

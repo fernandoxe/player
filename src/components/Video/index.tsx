@@ -216,7 +216,7 @@ export const Video = ({id}: VideoProps) => {
 
   const handleLoadedMetadata = () => {
     setLoadedMetadata(true);
-    if(videoRef.current) videoRef.current.currentTime = 8; // TODO: remove
+    // if(videoRef.current) videoRef.current.currentTime = 8; // TODO: remove
     console.log(videoRef.current?.currentTime);
     setCurrentTime(videoRef.current?.currentTime ?? 0);
     setDuration(videoRef.current?.duration ?? 0);
@@ -247,6 +247,10 @@ export const Video = ({id}: VideoProps) => {
     localStorage.setItem('username', user);
     setShowEditUser(false);
     handleConnect();
+  };
+
+  const handleEditUserClose = () => {
+    setShowEditUser(false);
   };
 
   return (
@@ -292,6 +296,7 @@ export const Video = ({id}: VideoProps) => {
       {showEditUser &&
         <EditUser
           onChange={handleEditUser}
+          onClose={handleEditUserClose}
         />
       }
     </div>
