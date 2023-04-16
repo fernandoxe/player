@@ -40,6 +40,7 @@ export const Video = ({id}: VideoProps) => {
   const [play, setPlay] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
+  const [canPlay, setCanPlay] = useState(false);
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -269,11 +270,19 @@ export const Video = ({id}: VideoProps) => {
       ref={videoContainerRef}
     >
       <div className="w-full h-full flex justify-center">
+        {!canPlay &&
+          <div className="absolute flex items-center justify-center w-full h-full">
+            <div className="w-[4rem] h-[4rem] animate-spin border-[0.4rem] border-purple-900/75 border-b-transparent rounded-full">
+            </div>
+          </div>
+        }
         <video
           ref={videoRef}
           onLoadedMetadata={handleLoadedMetadata}
           onTimeUpdate={handleTimeUpdate}
           crossOrigin="anonymous"
+          onCanPlay={() => setCanPlay(true)}
+          onWaiting={() => setCanPlay(false)}
         >
           <source src={`${MEDIA_HOST}/media/${id}.mp4`} type="video/mp4" />
           <track src={`${MEDIA_HOST}/media/${id}.es.vtt`} kind="subtitles" srcLang="es" />
