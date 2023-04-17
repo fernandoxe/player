@@ -64,11 +64,11 @@ export const Video = ({id}: VideoProps) => {
     if(video?.paused) {
       console.log('handle play play');
       playVideo();
-      emit('play');
+      emit('play', {currentTime: video.currentTime});
     } else {
       console.log('handle play pause');
       pauseVideo();
-      emit('pause');
+      emit('pause', {currentTime: video?.currentTime});
     }
   }, [playVideo, pauseVideo]);
 
@@ -116,26 +116,37 @@ export const Video = ({id}: VideoProps) => {
     if(!socketRef.current) socketRef.current = io(WEBSOCKETS_HOST);
 
     socketRef.current.on('connect', () => {
-      console.log('connected');
-      emit('join', {room: 'Anti-Hero'});
+      console.log('Connected');
+      emit('join', {room: id});
+    });
+
+    socketRef.current.on('connected', (message) => {
+      console.log(`Connected to room ${message.room}`);
+      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
     });
 
     socketRef.current.on('user-connected', (message) => {
       console.log(`User ${message.user} has connected to this room`);
+      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
+    });
+
+    socketRef.current.on('user-disconnected', (message) => {
+      console.log(`User ${message.user} has disconnected from this room`);
+      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
     });
 
     socketRef.current.on('play', (message) => {
-      console.log('user plays', message.user);
+      console.log(`User ${message.user} plays at ${message.currentTime}`);
       playVideo();
     });
 
     socketRef.current.on('pause', (message) => {
-      console.log('user paused', message.user);
+      console.log(`User ${message.user} paused at ${message.currentTime}`);
       pauseVideo();
     });
 
     socketRef.current.on('change-time', (message) => {
-      console.log('user changed time', message.currentTime, message.user);
+      console.log(`User ${message.user} changed time to ${message.currentTime}`);
       changeTime(message.currentTime);
     });
   };
