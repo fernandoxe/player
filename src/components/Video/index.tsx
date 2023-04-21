@@ -95,6 +95,7 @@ export const Video = ({id}: VideoProps) => {
   }, []);
 
   const handleChangeSubtitles = (lang: SubtitleLang) => {
+    localStorage.setItem('lang', lang);
     setLang(lang);
     if(videoRef.current) {
       const tracks = videoRef.current.textTracks;
@@ -266,7 +267,8 @@ export const Video = ({id}: VideoProps) => {
     }
     newAvailableTracks.push(SubtitleLang.off);
     setAvailableTracks(newAvailableTracks as SubtitleLang[]);
-    handleChangeSubtitles(newAvailableTracks[0] as SubtitleLang);
+    const selectedLang = localStorage.getItem('lang') || newAvailableTracks[0];
+    handleChangeSubtitles(selectedLang as SubtitleLang);
   };
 
   const handleTimeUpdate = () => {
