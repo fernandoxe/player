@@ -5,7 +5,25 @@ module.exports = {
     'public/index.html',
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'bubble': 'bubble 2.5s linear forwards',
+      },
+      keyframes: {
+        'bubble': {
+          '0%': {
+            transform: 'translateY(0)',
+            opacity: 0,
+          },
+          '30%': {
+            opacity: 1,
+          },
+          '100%': {
+            transform: 'translateY(-100%)',
+          },
+        },
+      },
+    },
   },
   plugins: [],
 };
