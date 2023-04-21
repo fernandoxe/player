@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { SubtitleLang } from '../../interfaces';
+import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
+import { Reaction } from '../Controls/Reactions/Reaction';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
 const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
@@ -41,6 +42,7 @@ export const Video = ({id}: VideoProps) => {
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [reactions, setReactions] = useState<{id: string; name: ReactionType, user?: string, position?: number}[]>([]);
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -107,7 +109,18 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
-  const handleConnect = () => {
+  const addReaction = useCallback((name: ReactionType, user?: string, position?: number) => {
+    const id = Math.random() + Date.now() + '';
+    const newReaction = {
+      id,
+      name,
+      user,
+      position,
+    };
+    setReactions(prevReactions => [...prevReactions.slice(-19), newReaction]);
+  }, []);
+
+  const handleConnect = useCallback(() => {
     const username = localStorage.getItem('username') || '';
     if(!username && !socketRef.current) {
       setShowEditUser(true);
@@ -149,7 +162,12 @@ export const Video = ({id}: VideoProps) => {
       console.log(`User ${message.user} changed time to ${message.currentTime}`);
       changeTime(message.currentTime);
     });
-  };
+
+    socketRef.current.on('reaction', (message: any) => {
+      console.log(`User ${message.user} reacted with ${message.reaction}`);
+      addReaction(message.reaction, message.user, message.position);
+    });
+  }, [changeTime, id, pauseVideo, playVideo, addReaction]);
 
   const emit = (message: string, data?: any) => {
     if(socketRef.current) {
@@ -273,9 +291,21 @@ export const Video = ({id}: VideoProps) => {
     setShowEditUser(false);
   };
 
+  const handleReaction = (name: ReactionType) => {
+    const user = localStorage.getItem('username') || '';
+    const position = Math.floor(Math.random() * 3);
+    emit('reaction', {
+      reaction: name,
+      currentTime: videoRef.current?.currentTime,
+      user,
+      position,
+    });
+    addReaction(name, user, position);
+  };
+
   return (
     <div
-      className={`relative flex items-center bg-black ${!showControls ? 'cursor-none' : ''}`}
+      className={`relative flex items-center overflow-hidden bg-black ${!showControls ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       // onTouchStart={handleMouseMove}
       ref={videoContainerRef}
@@ -300,6 +330,15 @@ export const Video = ({id}: VideoProps) => {
           <track src={`${MEDIA_HOST}/media/${id}.en.vtt`} kind="subtitles" srcLang="en" />
         </video>
       </div>
+      {reactions.map(reaction => (
+        <Reaction
+          key={reaction.id}
+          id={reaction.id}
+          name={reaction.name}
+          user={reaction.user}
+          position={reaction.position}
+        />
+      ))}
       {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
           <Controls
@@ -318,6 +357,7 @@ export const Video = ({id}: VideoProps) => {
             onFullscreen={handleFullscreen}
             onRewind={handleRewind}
             onForward={handleForward}
+            onReaction={handleReaction}
           />
         </div>
       }

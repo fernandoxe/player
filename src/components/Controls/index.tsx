@@ -8,8 +8,9 @@ import { ReactComponent as FirstPageIcon } from '../../icons/first_page_fill.svg
 import { ReactComponent as LastPageIcon } from '../../icons/last_page_fill.svg';
 import { useCallback, useState } from 'react';
 import { SubtitlesMenu } from './SubtitlesMenu';
-import { SubtitleLang } from '../../interfaces';
+import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Progress } from './Progress';
+import { Reactions } from './Reactions';
 
 const getTime = (current: number, duration: number) => {
   let currentString = new Date(current * 1000).toISOString().slice(11, 19);
@@ -43,6 +44,7 @@ export interface ControlsProps {
   onFullscreen: () => void;
   onRewind: () => void;
   onForward: () => void;
+  onReaction: (reaction: ReactionType) => void;
 }
 
 export const Controls = ({
@@ -60,6 +62,7 @@ export const Controls = ({
   onFullscreen,
   onRewind,
   onForward,
+  onReaction
 }: ControlsProps) => {
   const [showSubtitlesMenu, setShowSubtitlesMenu] = useState(false);
   
@@ -101,8 +104,15 @@ export const Controls = ({
     onForward();
   };
 
+  const handleReaction = (reaction: ReactionType) => {
+    onReaction(reaction);
+  };
+
   return (
     <div className="flex flex-col gap-4 px-2 py-4 from-purple-900/80 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
+      <Reactions
+        onReaction={handleReaction}
+      />
       <div className="flex items-center gap-2">
         <div className="w-6 h-6">
           <button
