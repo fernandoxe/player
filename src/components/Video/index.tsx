@@ -4,6 +4,7 @@ import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
 import { Reaction } from '../Controls/Reactions/Reaction';
+import { Users } from '../Controls/Users';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
 const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
@@ -11,21 +12,6 @@ const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
 export interface VideoProps {
   id: string;
 }
-
-/*
-::cue {
-  background: transparent;
-  font-family: 'Inria Sans', sans-serif;
-  font-size: 3.7vw;
-  // line-height: 2rem;
-  text-shadow:
-    1px 1px 3px #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000,
-    -1px 1px 0 #000,
-    1px 1px 0 #000;
-}
-*/
 
 export const Video = ({id}: VideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,6 +29,7 @@ export const Video = ({id}: VideoProps) => {
   const [showEditUser, setShowEditUser] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
   const [reactions, setReactions] = useState<{id: string; name: ReactionType, user?: string, position?: number}[]>([]);
+  const [users, setUsers] = useState<{id: string, user: string}[]>([]);
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -121,6 +108,10 @@ export const Video = ({id}: VideoProps) => {
     setReactions(prevReactions => [...prevReactions.slice(-19), newReaction]);
   }, []);
 
+  const refreshUsers = useCallback((users: {id: string, user: string}[]) => {
+    setUsers(users);
+  }, []);
+
   const handleConnect = useCallback(() => {
     const username = localStorage.getItem('username') || '';
     if(!username && !socketRef.current) {
@@ -137,16 +128,19 @@ export const Video = ({id}: VideoProps) => {
     socketRef.current.on('connected', (message) => {
       console.log(`Connected to room ${message.room}`);
       console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
+      refreshUsers(message.usersInRoom);
     });
 
     socketRef.current.on('user-connected', (message) => {
       console.log(`User ${message.user} has connected to this room`);
       console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
+      refreshUsers(message.usersInRoom);
     });
 
     socketRef.current.on('user-disconnected', (message) => {
       console.log(`User ${message.user} has disconnected from this room`);
       console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
+      refreshUsers(message.usersInRoom);
     });
 
     socketRef.current.on('play', (message) => {
@@ -168,7 +162,7 @@ export const Video = ({id}: VideoProps) => {
       console.log(`User ${message.user} reacted with ${message.reaction}`);
       addReaction(message.reaction, message.user, message.position);
     });
-  }, [changeTime, id, pauseVideo, playVideo, addReaction]);
+  }, [changeTime, id, pauseVideo, playVideo, addReaction, refreshUsers]);
 
   const emit = (message: string, data?: any) => {
     if(socketRef.current) {
@@ -343,6 +337,11 @@ export const Video = ({id}: VideoProps) => {
       ))}
       {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
+          {users.length > 0 &&
+            <div className="absolute top-0 left-0 right-0">
+              <Users users={users} />
+            </div>
+          }
           <Controls
             currentTime={currentTime}
             duration={duration}
