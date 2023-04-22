@@ -289,7 +289,7 @@ export const Video = ({id}: VideoProps) => {
 
   const handleReaction = (name: ReactionType) => {
     const user = localStorage.getItem('username') || '';
-    const position = Math.floor(Math.random() * 3);
+    const position = Math.floor(Math.random() * 10);
     emit('reaction', {
       reaction: name,
       currentTime: videoRef.current?.currentTime,

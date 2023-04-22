@@ -11,7 +11,6 @@ export interface ReactionProps {
 export const Reaction = ({id, name, user, position}: ReactionProps) => {
   const [active, setActive] = useState<boolean>(true);
   const timeout = useRef<NodeJS.Timeout | null>();
-  const marginLeft = position === 0 ? '' : position === 1 ? 'ml-8' : 'ml-16';
 
   useEffect(() => {
     timeout.current = setTimeout(() => {
@@ -28,7 +27,7 @@ export const Reaction = ({id, name, user, position}: ReactionProps) => {
   }
 
   return(
-    <div className={`absolute h-full top-0 left-2 flex items-end animate-bubble select-none ${marginLeft}`}>
+    <div className={`absolute h-full top-0 left-2 flex items-end animate-bubble select-none`} style={{marginLeft: `${position}vw`}}>
       <div className="flex items-center">
         <div className="text-[3.7vw]">
           {name}
