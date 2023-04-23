@@ -30,6 +30,7 @@ export const Video = ({id}: VideoProps) => {
   const [canPlay, setCanPlay] = useState(false);
   const [reactions, setReactions] = useState<{id: string; name: ReactionType, user?: string, position?: number}[]>([]);
   const [users, setUsers] = useState<{id: string, user: string}[]>([]);
+  const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -118,6 +119,7 @@ export const Video = ({id}: VideoProps) => {
       setShowEditUser(true);
       return;
     }
+    setConnect('connecting');
     if(!socketRef.current) socketRef.current = io(WEBSOCKETS_HOST);
 
     socketRef.current.on('connect', () => {
@@ -129,6 +131,12 @@ export const Video = ({id}: VideoProps) => {
       console.log(`Connected to room ${message.room}`);
       console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
       refreshUsers(message.usersInRoom);
+      setConnect('connected');
+    });
+
+    socketRef.current.on('disconnect', (reason) => {
+      console.log('Disconnected');
+      setConnect('reconnecting');
     });
 
     socketRef.current.on('user-connected', (message) => {
@@ -349,7 +357,7 @@ export const Video = ({id}: VideoProps) => {
             lang={lang}
             play={play}
             fullscreen={fullscreen}
-            connect={'disconnected'}
+            connect={connect}
             onPlay={handlePlay}
             onChangeTime={handleChangeTime}
             onReleaseTime={handleReleaseTime}

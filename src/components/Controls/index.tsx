@@ -12,6 +12,14 @@ import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Progress } from './Progress';
 import { Reactions } from './Reactions';
 
+const connectStatus = {
+  connected: 'text-purple-500',
+  connecting: 'animate-heart',
+  reconnecting: 'text-pink-700 animate-heart',
+  disconnected: '',
+  error: 'text-pink-700',
+};
+
 const getTime = (current: number, duration: number) => {
   let currentString = new Date(current * 1000).toISOString().slice(11, 19);
   let durationString = new Date(duration * 1000).toISOString().slice(11, 19);
@@ -35,7 +43,7 @@ export interface ControlsProps {
   lang: SubtitleLang;
   play: boolean;
   fullscreen: boolean;
-  connect: 'connected' | 'connecting' | 'disconnected' | 'error';
+  connect: 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
   onPlay: () => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
@@ -54,6 +62,7 @@ export const Controls = ({
   lang,
   play,
   fullscreen,
+  connect,
   onPlay,
   onChangeTime,
   onReleaseTime,
@@ -76,6 +85,11 @@ export const Controls = ({
   };
 
   const handleConnect = () => {
+    if(
+      connect === 'connected' ||
+      connect === 'connecting' ||
+      connect === 'reconnecting'
+    ) return;
     onConnect()
   };
 
@@ -151,7 +165,9 @@ export const Controls = ({
             className="outline-none w-6"
             onClick={handleConnect}
           >
-            <GroupIcon />
+            <div className={connectStatus[connect]}>
+              <GroupIcon />
+            </div>
           </button>
         </div>
         <div className="w-6 h-6 relative">
