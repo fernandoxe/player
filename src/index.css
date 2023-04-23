@@ -4,7 +4,7 @@
 
 @layer components {
   video::cue {
-    @apply bg-transparent text-[3.7vw] text-neutral-300 font-['Inria_Sans',_sans-serif];
+    @apply bg-transparent text-[3vw] text-neutral-300 font-['Inria_Sans',_sans-serif];
     text-shadow:
       1px 1px 3px #000,
       -1px -1px 0 #000,
