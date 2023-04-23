@@ -85,11 +85,6 @@ export const Controls = ({
   };
 
   const handleConnect = () => {
-    if(
-      connect === 'connected' ||
-      connect === 'connecting' ||
-      connect === 'reconnecting'
-    ) return;
     onConnect()
   };
 
@@ -164,6 +159,7 @@ export const Controls = ({
           <button
             className="outline-none w-6"
             onClick={handleConnect}
+            disabled={connect === 'connected' || connect === 'connecting' || connect === 'reconnecting'}
           >
             <div className={connectStatus[connect]}>
               <GroupIcon />
