@@ -7,7 +7,7 @@ module.exports = {
   theme: {
     extend: {
       animation: {
-        'bubble': 'bubble 2.5s linear forwards',
+        'bubble': 'bubble 2.8s linear forwards',
       },
       keyframes: {
         'bubble': {

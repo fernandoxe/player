@@ -15,7 +15,7 @@ export const Reaction = ({id, name, user, position}: ReactionProps) => {
   useEffect(() => {
     timeout.current = setTimeout(() => {
       setActive(false);
-    }, 3000);
+    }, 3400);
 
     return () => {
       clearTimeout(timeout.current as NodeJS.Timeout);
@@ -32,7 +32,7 @@ export const Reaction = ({id, name, user, position}: ReactionProps) => {
         <div className="text-[3.7vw]">
           {name}
         </div>
-        <div className="text-[1.75vw] leading-none bg-purple-900/40 px-1 py-0.5 rounded-sm">
+        <div className="text-[1.75vw] leading-none bg-purple-900/40 px-1 py-0.5 rounded">
           {user}
         </div>
       </div>
