@@ -154,7 +154,16 @@ export const Controls = ({
             <GroupIcon />
           </button>
         </div>
-        <div className="w-6 h-6">
+        <div className="w-6 h-6 relative">
+          {showSubtitlesMenu &&
+            <div className="absolute bottom-6 right-0">
+              <SubtitlesMenu
+                availableLangs={availableLangs}
+                lang={lang}
+                onChange={handleChangeLang}
+              />
+            </div>
+          }
           <button
             className="outline-none"
             onClick={handleSubtitles}
@@ -176,15 +185,6 @@ export const Controls = ({
           </button>
         </div>
       </div>
-      {showSubtitlesMenu &&
-        <div className="absolute bottom-[3.25rem] right-0">
-          <SubtitlesMenu
-            availableLangs={availableLangs}
-            lang={lang}
-            onChange={handleChangeLang}
-          />
-        </div>
-      }
       <div>
         <Progress
           currentTime={currentTime}
