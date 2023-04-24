@@ -7,7 +7,7 @@ export interface EditUserProps {
 }
 
 export const EditUser = ({onChange, onClose}: EditUserProps) => {
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState(localStorage.getItem('username') || '');
 
   const handleUserChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newUser = event.target.value;
@@ -20,21 +20,26 @@ export const EditUser = ({onChange, onClose}: EditUserProps) => {
     onChange(user);
   };
 
+  const handleFocus = (event: ChangeEvent<HTMLInputElement>) => {
+    event.target.select();
+  };
+
   return (
     <div
-      className="flex items-center justify-center fixed top-0 right-0 bottom-0 left-0 bg-slate-900 bg-opacity-75 z-[1]"
+      className="flex items-center justify-center fixed top-0 right-0 bottom-0 left-0 bg-gray-900/75 z-[1]"
       onClick={onClose}
     >
       <form onSubmit={handleUserAccept}>
         <div
-          className="flex items-center gap-2 rounded-lg max-w-xs bg-slate-500 p-4"
+          className="flex items-center gap-2 rounded-lg max-w-xs from-purple-900 to-purple-700 bg-gradient-to-t p-4"
           onClick={(e) => e.stopPropagation()}
         >
           <input
-            className="px-2 py-1 outline-none text-gray-900"
+            className="px-2 py-1 outline-none text-neutral-900 bg-neutral-300"
             type="text"
             value={user}
             onChange={handleUserChange}
+            onFocus={handleFocus}
             placeholder={'name'}
           />
           <div className="w-6 h-6">

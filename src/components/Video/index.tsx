@@ -31,6 +31,7 @@ export const Video = ({id}: VideoProps) => {
   const [reactions, setReactions] = useState<{id: string; name: ReactionType, user?: string, position?: number}[]>([]);
   const [users, setUsers] = useState<{id: string, user: string}[]>([]);
   const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
+  const [socketId, setSocketId] = useState<string>('sada');
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -119,15 +120,19 @@ export const Video = ({id}: VideoProps) => {
       setShowEditUser(true);
       return;
     }
-    setConnect('connecting');
-    if(!socketRef.current?.connected) socketRef.current = io(WEBSOCKETS_HOST, {
-      reconnectionAttempts: 10,
-      timeout: 10000,
-    });
+
+    if(!socketRef.current?.connected) {
+      setConnect('connecting');
+      socketRef.current = io(WEBSOCKETS_HOST, {
+        reconnectionAttempts: 10,
+        timeout: 10000,
+      });
+    }
 
     socketRef.current.on('connect', () => {
-      console.log('Connected');
+      console.log('Connected', socketRef.current?.id);
       emit('join', {room: id});
+      setSocketId(socketRef.current?.id || '');
     });
 
     socketRef.current.on('connect_error', (error) => {
@@ -150,26 +155,26 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('connected', (message) => {
       console.log(`Connected to room ${message.room}`);
-      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
-      refreshUsers(message.usersInRoom);
+      console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
+      refreshUsers(message.users);
       setConnect('connected');
     });
 
     socketRef.current.on('disconnect', (reason) => {
-      console.log('Disconnected');
+      console.log('Disconnected', reason);
       setConnect('reconnecting');
     });
 
     socketRef.current.on('user-connected', (message) => {
       console.log(`User ${message.user} has connected to this room`);
-      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
-      refreshUsers(message.usersInRoom);
+      console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
+      refreshUsers(message.users);
     });
 
     socketRef.current.on('user-disconnected', (message) => {
       console.log(`User ${message.user} has disconnected from this room`);
-      console.log(`Users in room ${message.usersInRoom.map((user: any) => user.user)}`);
-      refreshUsers(message.usersInRoom);
+      console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
+      refreshUsers(message.users);
     });
 
     socketRef.current.on('play', (message) => {
@@ -191,6 +196,12 @@ export const Video = ({id}: VideoProps) => {
       console.log(`User ${message.user} reacted with ${message.reaction}`);
       addReaction(message.reaction, message.user, message.position);
     });
+
+    socketRef.current.on('change-user', (message: any) => {
+      console.log(`User ${message.user} changed user to ${message.user}`);
+      refreshUsers(message.users);
+    });
+
   }, [changeTime, id, pauseVideo, playVideo, addReaction, refreshUsers]);
 
   const emit = (message: string, data?: any) => {
@@ -306,11 +317,15 @@ export const Video = ({id}: VideoProps) => {
     }, 2000);
   };
 
-  const handleEditUser = (user: string) => {
+  const handleEditUser = useCallback((user: string) => {
     localStorage.setItem('username', user);
     setShowEditUser(false);
-    handleConnect();
-  };
+    if(socketRef.current?.connected) {
+      emit('change-user');
+    } else {
+      handleConnect();
+    }
+  }, [handleConnect]);
 
   const handleEditUserClose = () => {
     setShowEditUser(false);
@@ -368,7 +383,11 @@ export const Video = ({id}: VideoProps) => {
         <div className="absolute top-0 left-0 w-full h-full">
           {users.length > 0 &&
             <div className="absolute top-0 left-0 right-0">
-              <Users users={users} />
+              <Users
+                socketId={socketId}
+                users={users}
+                onEditUser={() => setShowEditUser(true)}
+              />
             </div>
           }
           <Controls

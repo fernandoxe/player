@@ -2,9 +2,15 @@ import { ReactComponent as PersonIcon } from '../../../icons/person_fill.svg';
 
 export interface UsersProps {
   users: {id: string, user: string}[];
+  socketId: string;
+  onEditUser: () => void;
 };
 
-export const Users = ({users}: UsersProps) => {
+export const Users = ({users, socketId, onEditUser}: UsersProps) => {
+  const handleEditUser = (id: string) => {
+    if (id === socketId) onEditUser();
+  };
+
   return(
     <div className="flex justify-end text-xs px-2 py-4 from-transparent to-purple-900/50 bg-gradient-to-t select-none">
       <div className="flex flex-col gap-1">
@@ -16,7 +22,10 @@ export const Users = ({users}: UsersProps) => {
             <div className="w-4 h-4">
               <PersonIcon />
             </div>
-            <div>
+            <div
+              className={`${user.id === socketId ? 'font-bold cursor-pointer' : ''}`}
+              onClick={() => handleEditUser(user.id)}
+            >
               {user.user}
             </div>
           </div>
