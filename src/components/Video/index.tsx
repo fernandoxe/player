@@ -130,6 +130,14 @@ export const Video = ({id}: VideoProps) => {
       emit('join', {room: id});
     });
 
+    socketRef.current.on('connect_error', (error) => {
+      console.log('Connect error', error);
+    });
+
+    socketRef.current.io.on('error', (error) => {
+      console.log('Error', error);
+    });
+
     socketRef.current.io.on('reconnect_attempt', (attempt) => {
       console.log('Reconnect attempt', attempt);
       if(attempt === 1) setConnect('reconnecting');
