@@ -120,11 +120,24 @@ export const Video = ({id}: VideoProps) => {
       return;
     }
     setConnect('connecting');
-    if(!socketRef.current) socketRef.current = io(WEBSOCKETS_HOST);
+    if(!socketRef.current?.connected) socketRef.current = io(WEBSOCKETS_HOST, {
+      reconnectionAttempts: 10,
+      timeout: 10000,
+    });
 
     socketRef.current.on('connect', () => {
       console.log('Connected');
       emit('join', {room: id});
+    });
+
+    socketRef.current.io.on('reconnect_attempt', (attempt) => {
+      console.log('Reconnect attempt', attempt);
+      if(attempt === 1) setConnect('reconnecting');
+    });
+
+    socketRef.current.io.on('reconnect_failed', () => {
+      console.log('Reconnect attempts failed');
+      setConnect('error');
     });
 
     socketRef.current.on('connected', (message) => {
