@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { ReactionType } from '../../interfaces';
+import { ReactionType, User } from '../../interfaces';
 
 export interface ReactionProps {
   id: string;
   name: ReactionType;
-  user?: string;
+  user: User;
   position?: number;
 }
 
@@ -32,9 +32,11 @@ export const Reaction = ({id, name, user, position}: ReactionProps) => {
         <div className="text-[3.7vw]">
           {name}
         </div>
-        <div className="text-[1.75vw] leading-none bg-purple-900/40 px-1 py-0.5 rounded">
-          {user}
-        </div>
+        {user.user &&
+          <div className="text-[1.75vw] leading-none bg-purple-900/40 px-1 py-0.5 rounded">
+            {user.user}
+          </div>
+        }
       </div>
     </div>
   );

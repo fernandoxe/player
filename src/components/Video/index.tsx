@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { ReactionType, SubtitleLang } from '../../interfaces';
+import { ReactionType, SubtitleLang, User } from '../../interfaces';
 import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
 import { Reaction } from '../Reaction';
@@ -28,8 +28,8 @@ export const Video = ({id}: VideoProps) => {
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
-  const [reactions, setReactions] = useState<{id: string; name: ReactionType, user?: string, position?: number}[]>([]);
-  const [users, setUsers] = useState<{id: string, user: string}[]>([]);
+  const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number}[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
   const [socketId, setSocketId] = useState<string>('sada');
 
@@ -99,7 +99,7 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
-  const addReaction = useCallback((name: ReactionType, user?: string, position?: number) => {
+  const addReaction = useCallback((name: ReactionType, user: User, position?: number) => {
     const id = Math.random() + Date.now() + '';
     const newReaction = {
       id,
@@ -110,7 +110,7 @@ export const Video = ({id}: VideoProps) => {
     setReactions(prevReactions => [...prevReactions.slice(-19), newReaction]);
   }, []);
 
-  const refreshUsers = useCallback((users: {id: string, user: string}[]) => {
+  const refreshUsers = useCallback((users: User[]) => {
     setUsers(users);
   }, []);
 
@@ -166,39 +166,39 @@ export const Video = ({id}: VideoProps) => {
     });
 
     socketRef.current.on('user-connected', (message) => {
-      console.log(`User ${message.user} has connected to this room`);
+      console.log(`User ${message.user.user} has connected to this room`);
       console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
       refreshUsers(message.users);
     });
 
     socketRef.current.on('user-disconnected', (message) => {
-      console.log(`User ${message.user} has disconnected from this room`);
+      console.log(`User ${message.user.user} has disconnected from this room`);
       console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
       refreshUsers(message.users);
     });
 
     socketRef.current.on('play', (message) => {
-      console.log(`User ${message.user} plays at ${message.currentTime}`);
+      console.log(`User ${message.user.user} plays at ${message.currentTime}`);
       playVideo();
     });
 
     socketRef.current.on('pause', (message) => {
-      console.log(`User ${message.user} paused at ${message.currentTime}`);
+      console.log(`User ${message.user.user} paused at ${message.currentTime}`);
       pauseVideo();
     });
 
     socketRef.current.on('change-time', (message) => {
-      console.log(`User ${message.user} changed time to ${message.currentTime}`);
+      console.log(`User ${message.user.user} changed time to ${message.currentTime}`);
       changeTime(message.currentTime);
     });
 
     socketRef.current.on('reaction', (message: any) => {
-      console.log(`User ${message.user} reacted with ${message.reaction}`);
+      console.log(`User ${message.user.user} reacted with ${message.reaction}`);
       addReaction(message.reaction, message.user, message.position);
     });
 
     socketRef.current.on('change-user', (message: any) => {
-      console.log(`User ${message.user} changed user to ${message.user}`);
+      console.log(`User ${message.user.user} changed user to ${message.user}`);
       refreshUsers(message.users);
     });
 
@@ -340,7 +340,7 @@ export const Video = ({id}: VideoProps) => {
       user,
       position,
     });
-    addReaction(name, user, position);
+    addReaction(name, {id: socketId, user}, position);
   };
 
   return (

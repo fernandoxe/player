@@ -1,7 +1,8 @@
 import { ReactComponent as PersonIcon } from '../../icons/person_fill.svg';
+import { User } from '../../interfaces';
 
 export interface UsersProps {
-  users: {id: string, user: string}[];
+  users: User[];
   socketId: string;
   onEditUser: () => void;
 };

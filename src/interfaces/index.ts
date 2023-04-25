@@ -13,3 +13,8 @@ export enum ReactionType {
   cry = '😭',
   thinking = '🤔',
 }
+
+export interface User {
+  id: string;
+  user: string;
+}
