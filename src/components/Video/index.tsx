@@ -45,7 +45,7 @@ export const Video = ({id}: VideoProps) => {
     handleMouseMove();
     const pausedTimes = localStorage.getItem('pausedTimes') || '{}';
     const parsedPausedTimes = JSON.parse(pausedTimes);
-    parsedPausedTimes[id] = Math.floor(videoRef.current?.currentTime || 0);
+    parsedPausedTimes[id] = videoRef.current?.ended ? 0 : Math.floor(videoRef.current?.currentTime || 0);
     localStorage.setItem('pausedTimes', JSON.stringify(parsedPausedTimes));
   }, [id]);
   
@@ -343,6 +343,11 @@ export const Video = ({id}: VideoProps) => {
     addReaction(name, {id: socketId, user}, position);
   };
 
+  const handleEnded = () => {
+    console.log('Video ended', videoRef.current?.currentTime, videoRef.current?.duration);
+    pauseVideo();
+  };
+
   return (
     <div
       className={`relative flex items-center overflow-hidden bg-black ${!showControls ? 'cursor-none' : ''}`}
@@ -364,6 +369,7 @@ export const Video = ({id}: VideoProps) => {
           crossOrigin="anonymous"
           onCanPlay={() => setCanPlay(true)}
           onWaiting={() => setCanPlay(false)}
+          onEnded={handleEnded}
         >
           <source src={`${MEDIA_HOST}/media/${id}.mp4`} type="video/mp4" />
           <track src={`${MEDIA_HOST}/media/${id}.es.vtt`} kind="subtitles" srcLang="es" />
