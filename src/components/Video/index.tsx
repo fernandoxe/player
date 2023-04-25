@@ -312,6 +312,7 @@ export const Video = ({id}: VideoProps) => {
   const handleMouseMove = () => {
     setShowControls(true);
     clearTimeout(timeoutRef.current || 0);
+    if(videoRef.current?.paused) return;
     timeoutRef.current = setTimeout(() => {
       setShowControls(false);
     }, 2000);
