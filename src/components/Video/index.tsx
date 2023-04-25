@@ -32,6 +32,7 @@ export const Video = ({id}: VideoProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
   const [socketId, setSocketId] = useState<string>('sada');
+  const [lastEvent, setLastEvent] = useState<{user: User, event: string}>();
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -56,12 +57,14 @@ export const Video = ({id}: VideoProps) => {
       console.log('handle play play');
       playVideo();
       emit('play', {currentTime: video.currentTime});
+      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'play'});
     } else {
       console.log('handle play pause');
       pauseVideo();
       emit('pause', {currentTime: video?.currentTime});
+      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'pause'});
     }
-  }, [playVideo, pauseVideo]);
+  }, [playVideo, pauseVideo, socketId]);
 
   const changeTime = useCallback((time: number) => {
     if(videoRef.current) {
@@ -179,11 +182,13 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('play', (message) => {
       console.log(`User ${message.user.user} plays at ${message.currentTime}`);
+      setLastEvent({user: message.user, event: 'play'});
       playVideo();
     });
 
     socketRef.current.on('pause', (message) => {
       console.log(`User ${message.user.user} paused at ${message.currentTime}`);
+      setLastEvent({user: message.user, event: 'pause'});
       pauseVideo();
     });
 
@@ -393,6 +398,7 @@ export const Video = ({id}: VideoProps) => {
               <Users
                 socketId={socketId}
                 users={users}
+                lastEvent={lastEvent}
                 onEditUser={() => setShowEditUser(true)}
               />
             </div>
