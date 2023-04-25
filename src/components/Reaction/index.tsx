@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ReactionType } from '../../../../interfaces';
+import { ReactionType } from '../../interfaces';
 
 export interface ReactionProps {
   id: string;

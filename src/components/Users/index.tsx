@@ -1,4 +1,4 @@
-import { ReactComponent as PersonIcon } from '../../../icons/person_fill.svg';
+import { ReactComponent as PersonIcon } from '../../icons/person_fill.svg';
 
 export interface UsersProps {
   users: {id: string, user: string}[];

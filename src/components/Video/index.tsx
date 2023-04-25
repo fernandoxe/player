@@ -3,8 +3,8 @@ import { io, Socket } from 'socket.io-client';
 import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
-import { Reaction } from '../Controls/Reactions/Reaction';
-import { Users } from '../Controls/Users';
+import { Reaction } from '../Reaction';
+import { Users } from '../Users';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
 const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
