@@ -198,7 +198,7 @@ export const Video = ({id}: VideoProps) => {
     });
 
     socketRef.current.on('change-user', (message: any) => {
-      console.log(`User ${message.user.user} changed user to ${message.user}`);
+      console.log(`User ${message.user.user} changed user to ${message.user.user}`);
       refreshUsers(message.users);
     });
 
