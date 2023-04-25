@@ -33,6 +33,7 @@ export const Video = ({id}: VideoProps) => {
   const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
   const [socketId, setSocketId] = useState<string>('sada');
   const [lastEvent, setLastEvent] = useState<{user: User, event: string}>();
+  const [videoName, setVideoName] = useState<string>('');
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -290,6 +291,7 @@ export const Video = ({id}: VideoProps) => {
 
   const handleLoadedMetadata = () => {
     setLoadedMetadata(true);
+    setVideoName(id.split('.').join(' '));
     if(videoRef.current) {
       const pausedTimes = localStorage.getItem('pausedTimes') || '{}';
       const parsedPausedTimes = JSON.parse(pausedTimes);
@@ -393,14 +395,19 @@ export const Video = ({id}: VideoProps) => {
       ))}
       {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
-          {users.length > 0 &&
-            <div className="absolute top-0 left-0 right-0">
-              <Users
-                socketId={socketId}
-                users={users}
-                lastEvent={lastEvent}
-                onEditUser={() => setShowEditUser(true)}
-              />
+          {videoName &&
+            <div className="flex justify-between absolute top-0 left-0 right-0 px-2 py-4 from-transparent to-purple-900/50 bg-gradient-to-t select-none">
+              <div className="text-xs">
+                {videoName}
+              </div>
+              {users.length > 0 &&
+                <Users
+                  socketId={socketId}
+                  users={users}
+                  lastEvent={lastEvent}
+                  onEditUser={() => setShowEditUser(true)}
+                />
+              }
             </div>
           }
           <Controls
