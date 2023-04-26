@@ -78,9 +78,10 @@ export const Video = ({id}: VideoProps) => {
     if(videoRef.current) {
       changeTime(time);
       emit('change-time', {currentTime: time});
+      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'change-time'});
       console.log('changed time to', videoRef.current?.currentTime);
     }
-  }, [changeTime]);
+  }, [changeTime, socketId]);
 
   const handleReleaseTime = useCallback((time: number) => {
     console.log('relesased time at', time);
@@ -195,6 +196,7 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('change-time', (message) => {
       console.log(`User ${message.user.user} changed time to ${message.currentTime}`);
+      setLastEvent({user: message.user, event: 'change-time'})
       changeTime(message.currentTime);
     });
 
