@@ -14,6 +14,8 @@ export interface UsersProps {
 };
 
 export const Users = ({users, socketId, currentTime, lastEvent, onEditUser}: UsersProps) => {
+  const timeColor = Math.floor(currentTime) !== Math.floor(lastEvent?.currentTime || 0) ? 'text-pink-600' : '';
+  
   const handleEditUser = (id: string) => {
     if (id === socketId) onEditUser();
   };
@@ -29,8 +31,8 @@ export const Users = ({users, socketId, currentTime, lastEvent, onEditUser}: Use
             {user.id === lastEvent?.user.id && lastEvent.event === 'pause' &&
               <div className={`relative`}>
                 {currentTime &&
-                  <div className="absolute top-0 left-0 -translate-x-full pr-1">
-                    {getTimeFormatted(currentTime)}
+                  <div className={`absolute top-0 left-0 -translate-x-full pr-1 ${timeColor}`}>
+                    {getTimeFormatted(lastEvent.currentTime)}
                   </div>
                 }
                 <PauseIcon />

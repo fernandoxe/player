@@ -16,9 +16,9 @@ import { getTimeProgress } from '../services';
 const connectStatus = {
   connected: 'text-purple-500',
   connecting: 'animate-heart',
-  reconnecting: 'text-pink-700 animate-heart',
+  reconnecting: 'text-pink-600 animate-heart',
   disconnected: '',
-  error: 'text-pink-700',
+  error: 'text-pink-600',
 };
 
 export interface ControlsProps {
