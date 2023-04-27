@@ -10,13 +10,19 @@ export const Reactions = ({onReaction}: ReactionsProps) => {
   };
 
   return(
-    <div className="flex gap-4 text-lg leading-none">
+    <div className="flex gap-4 text-2xl leading-none">
       <button
         className="outline-none"
         onClick={() => reaction(ReactionType.love)}
       >
         ❤️
       </button>
+        <button
+          className="outline-none"
+          onClick={() => reaction(ReactionType.inlove)}
+        >
+          😍
+        </button>
       <button
         className="outline-none"
         onClick={() => reaction(ReactionType.hahaha)}
@@ -46,6 +52,12 @@ export const Reactions = ({onReaction}: ReactionsProps) => {
         onClick={() => reaction(ReactionType.cry)}
       >
         😭
+      </button>
+      <button
+        className="outline-none"
+        onClick={() => reaction(ReactionType.surprise)}
+      >
+        😮
       </button>
       <button
         className="outline-none"

@@ -6,11 +6,13 @@ export enum SubtitleLang {
 
 export enum ReactionType {
   love = '❤️',
+  inlove = '😍',
   hahaha = '😂',
   sad = '😢',
   pleading = '🥺',
   angry = '😠',
   cry = '😭',
+  surprise = '😮',
   thinking = '🤔',
 }
 
