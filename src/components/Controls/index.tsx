@@ -11,6 +11,7 @@ import { SubtitlesMenu } from './SubtitlesMenu';
 import { ReactionType, SubtitleLang } from '../../interfaces';
 import { Progress } from './Progress';
 import { Reactions } from './Reactions';
+import { getTimeProgress } from '../services';
 
 const connectStatus = {
   connected: 'text-purple-500',
@@ -19,22 +20,6 @@ const connectStatus = {
   disconnected: '',
   error: 'text-pink-700',
 };
-
-const getTime = (current: number, duration: number) => {
-  let currentString = new Date(current * 1000).toISOString().slice(11, 19);
-  let durationString = new Date(duration * 1000).toISOString().slice(11, 19);
-  if(durationString.startsWith('00:0')) {
-    currentString = currentString.slice(4);
-    durationString = durationString.slice(4);
-  } else if(durationString.startsWith('00:')) {
-    currentString = currentString.slice(3);
-    durationString = durationString.slice(3);
-  } else if(durationString.startsWith('0')) {
-    currentString = currentString.slice(1);
-    durationString = durationString.slice(1);
-  }
-  return `${currentString} / ${durationString}`;
-}
 
 export interface ControlsProps {
   currentTime: number;
@@ -137,7 +122,7 @@ export const Controls = ({
           </button>
         </div>
         <div className="text-xs">
-          {getTime(currentTime, duration)}
+          {getTimeProgress(currentTime, duration)}
         </div>
         <div className="w-6 h-6">
           <button
