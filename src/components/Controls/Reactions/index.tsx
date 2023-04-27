@@ -10,7 +10,7 @@ export const Reactions = ({onReaction}: ReactionsProps) => {
   };
 
   return(
-    <div className="flex gap-4 text-2xl leading-none overflow-scroll">
+    <div className="flex gap-4 text-xl leading-none">
       <button
         className="outline-none"
         onClick={() => reaction(ReactionType.love)}
