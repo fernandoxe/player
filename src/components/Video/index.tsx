@@ -31,8 +31,8 @@ export const Video = ({id}: VideoProps) => {
   const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number}[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
-  const [socketId, setSocketId] = useState<string>('sada');
-  const [lastEvent, setLastEvent] = useState<{user: User, event: string}>();
+  const [socketId, setSocketId] = useState<string>('');
+  const [lastEvent, setLastEvent] = useState<{user: User; event: string; currentTime: number}>();
   const [videoName, setVideoName] = useState<string>('');
 
   const playVideo = useCallback(() => {
@@ -58,12 +58,20 @@ export const Video = ({id}: VideoProps) => {
       console.log('handle play play');
       playVideo();
       emit('play', {currentTime: video.currentTime});
-      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'play'});
+      setLastEvent({
+        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        event: 'play',
+        currentTime: video.currentTime,
+      });
     } else {
       console.log('handle play pause');
       pauseVideo();
       emit('pause', {currentTime: video?.currentTime});
-      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'pause'});
+      video && setLastEvent({
+        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        event: 'pause',
+        currentTime: video.currentTime,
+      });
     }
   }, [playVideo, pauseVideo, socketId]);
 
@@ -78,7 +86,11 @@ export const Video = ({id}: VideoProps) => {
     if(videoRef.current) {
       changeTime(time);
       emit('change-time', {currentTime: time});
-      setLastEvent({user: {id: socketId, user: localStorage.getItem('username') || ''}, event: 'change-time'});
+      setLastEvent({
+        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        event: 'change-time',
+        currentTime: time,
+      });
       console.log('changed time to', videoRef.current?.currentTime);
     }
   }, [changeTime, socketId]);
@@ -184,19 +196,31 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('play', (message) => {
       console.log(`User ${message.user.user} plays at ${message.currentTime}`);
-      setLastEvent({user: message.user, event: 'play'});
+      setLastEvent({
+        user: message.user,
+        event: 'play',
+        currentTime: message.currentTime,
+      });
       playVideo();
     });
 
     socketRef.current.on('pause', (message) => {
       console.log(`User ${message.user.user} paused at ${message.currentTime}`);
-      setLastEvent({user: message.user, event: 'pause'});
+      setLastEvent({
+        user: message.user,
+        event: 'pause',
+        currentTime: message.currentTime,
+      });
       pauseVideo();
     });
 
     socketRef.current.on('change-time', (message) => {
       console.log(`User ${message.user.user} changed time to ${message.currentTime}`);
-      setLastEvent({user: message.user, event: 'change-time'})
+      setLastEvent({
+        user: message.user,
+        event: 'change-time',
+        currentTime: message.currentTime,
+      });
       changeTime(message.currentTime);
     });
 
@@ -406,6 +430,7 @@ export const Video = ({id}: VideoProps) => {
                 <Users
                   socketId={socketId}
                   users={users}
+                  currentTime={currentTime}
                   lastEvent={lastEvent}
                   onEditUser={() => setShowEditUser(true)}
                 />

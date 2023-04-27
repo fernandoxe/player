@@ -3,15 +3,17 @@ import { ReactComponent as PauseIcon } from '../../icons/pause_fill.svg';
 import { ReactComponent as PlayIcon } from '../../icons/play_fill.svg';
 import { ReactComponent as LineEndCircleIcon } from '../../icons/line_end_circle_fill.svg';
 import { User } from '../../interfaces';
+import { getTimeFormatted } from '../services';
 
 export interface UsersProps {
   users: User[];
   socketId: string;
-  lastEvent?: {user: User, event: string};
+  currentTime: number;
+  lastEvent?: {user: User; event: string; currentTime: number};
   onEditUser: () => void;
 };
 
-export const Users = ({users, lastEvent, socketId, onEditUser}: UsersProps) => {
+export const Users = ({users, socketId, currentTime, lastEvent, onEditUser}: UsersProps) => {
   const handleEditUser = (id: string) => {
     if (id === socketId) onEditUser();
   };
@@ -25,7 +27,14 @@ export const Users = ({users, lastEvent, socketId, onEditUser}: UsersProps) => {
         >
           <div className="w-4 h-4">
             {user.id === lastEvent?.user.id && lastEvent.event === 'pause' &&
-              <PauseIcon />
+              <div className={`relative`}>
+                {currentTime &&
+                  <div className="absolute top-0 left-0 -translate-x-full pr-1">
+                    {getTimeFormatted(currentTime)}
+                  </div>
+                }
+                <PauseIcon />
+              </div>
             }
             {user.id === lastEvent?.user.id && lastEvent.event === 'play' &&
               <PlayIcon />
