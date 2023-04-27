@@ -8,12 +8,12 @@ import { ReactComponent as FirstPageIcon } from '../../icons/first_page_fill.svg
 import { ReactComponent as LastPageIcon } from '../../icons/last_page_fill.svg';
 import { useCallback, useState } from 'react';
 import { SubtitlesMenu } from './SubtitlesMenu';
-import { ReactionType, SubtitleLang } from '../../interfaces';
+import { ReactionType, SubtitleLang, ConnectStatus } from '../../interfaces';
 import { Progress } from './Progress';
 import { Reactions } from './Reactions';
 import { getTimeProgress } from '../services';
 
-const connectStatus = {
+const connectStyles: {[key in ConnectStatus]: string} = {
   connected: 'text-purple-500',
   connecting: 'animate-heart',
   reconnecting: 'text-pink-600 animate-heart',
@@ -28,7 +28,7 @@ export interface ControlsProps {
   lang: SubtitleLang;
   play: boolean;
   fullscreen: boolean;
-  connect: 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error';
+  connect: ConnectStatus;
   onPlay: () => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
@@ -144,9 +144,9 @@ export const Controls = ({
           <button
             className="outline-none w-6"
             onClick={handleConnect}
-            disabled={connect === 'connected' || connect === 'connecting' || connect === 'reconnecting'}
+            disabled={connect === ConnectStatus.connected || connect === ConnectStatus.connecting || connect === ConnectStatus.reconnecting}
           >
-            <div className={connectStatus[connect]}>
+            <div className={connectStyles[connect]}>
               <GroupIcon />
             </div>
           </button>

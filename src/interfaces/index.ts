@@ -20,3 +20,11 @@ export interface User {
   id: string;
   user: string;
 }
+
+export enum ConnectStatus {
+  connected = 'connected',
+  connecting = 'connecting',
+  reconnecting = 'reconnecting',
+  disconnected = 'disconnected',
+  error = 'error',
+}

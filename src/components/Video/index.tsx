@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { ReactionType, SubtitleLang, User } from '../../interfaces';
+import { ReactionType, SubtitleLang, User, ConnectStatus } from '../../interfaces';
 import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
 import { Reaction } from '../Reaction';
@@ -30,7 +30,7 @@ export const Video = ({id}: VideoProps) => {
   const [canPlay, setCanPlay] = useState(false);
   const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number}[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [connect, setConnect] = useState<'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'error'>('disconnected');
+  const [connect, setConnect] = useState<ConnectStatus>(ConnectStatus.disconnected);
   const [socketId, setSocketId] = useState<string>('');
   const [lastEvent, setLastEvent] = useState<{user: User; event: string; currentTime: number}>();
   const [videoName, setVideoName] = useState<string>('');
@@ -139,7 +139,7 @@ export const Video = ({id}: VideoProps) => {
     }
 
     if(!socketRef.current?.connected) {
-      setConnect('connecting');
+      setConnect(ConnectStatus.connecting);
       socketRef.current = io(WEBSOCKETS_HOST, {
         reconnectionAttempts: 10,
         timeout: 10000,
@@ -162,24 +162,24 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.io.on('reconnect_attempt', (attempt) => {
       console.log('Reconnect attempt', attempt);
-      if(attempt === 1) setConnect('reconnecting');
+      if(attempt === 1) setConnect(ConnectStatus.reconnecting);
     });
 
     socketRef.current.io.on('reconnect_failed', () => {
       console.log('Reconnect attempts failed');
-      setConnect('error');
+      setConnect(ConnectStatus.error);
     });
 
     socketRef.current.on('connected', (message) => {
       console.log(`Connected to room ${message.room}`);
       console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
       refreshUsers(message.users);
-      setConnect('connected');
+      setConnect(ConnectStatus.connected);
     });
 
     socketRef.current.on('disconnect', (reason) => {
       console.log('Disconnected', reason);
-      setConnect('reconnecting');
+      setConnect(ConnectStatus.reconnecting);
     });
 
     socketRef.current.on('user-connected', (message) => {
