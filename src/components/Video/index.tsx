@@ -243,7 +243,7 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
-  const handleFullscreen = () => {
+  const handleFullscreen = useCallback(() => {
     const fullscreenContainer = videoContainerRef.current;
     if(!fullscreenContainer) return;
     if(!fullscreen) {
@@ -265,7 +265,7 @@ export const Video = ({id}: VideoProps) => {
         setFullscreen(false);
       }
     }
-  };
+  }, [fullscreen]);
 
   const handleRewind = useCallback(() => {
     const video = videoRef.current;
@@ -322,8 +322,7 @@ export const Video = ({id}: VideoProps) => {
       const pausedTimes = localStorage.getItem('pausedTimes') || '{}';
       const parsedPausedTimes = JSON.parse(pausedTimes);
       videoRef.current.currentTime = Number(parsedPausedTimes[id] || 0) - 5;
-    } 
-    console.log(videoRef.current?.currentTime);
+    }
     setCurrentTime(videoRef.current?.currentTime ?? 0);
     setDuration(videoRef.current?.duration ?? 0);
     const tracks = videoRef.current?.textTracks || [];
@@ -338,9 +337,9 @@ export const Video = ({id}: VideoProps) => {
     handleChangeSubtitles(selectedLang as SubtitleLang);
   };
 
-  const handleTimeUpdate = () => {
+  const handleTimeUpdate = useCallback(() => {
     setCurrentTime(videoRef.current?.currentTime ?? 0);
-  };
+  }, []);
 
   const handleMouseMove = () => {
     setShowControls(true);
@@ -365,7 +364,7 @@ export const Video = ({id}: VideoProps) => {
     setShowEditUser(false);
   };
 
-  const handleReaction = (name: ReactionType) => {
+  const handleReaction = useCallback((name: ReactionType) => {
     const user = localStorage.getItem('username') || '';
     const position = Math.floor(Math.random() * 10);
     emit('reaction', {
@@ -375,7 +374,7 @@ export const Video = ({id}: VideoProps) => {
       position,
     });
     addReaction(name, {id: socketId, user}, position);
-  };
+  }, [addReaction, socketId]);
 
   const handleEnded = () => {
     console.log('Video ended', videoRef.current?.currentTime, videoRef.current?.duration);
