@@ -16,7 +16,6 @@ export const EditUser = ({onChange, onClose}: EditUserProps) => {
 
   const handleUserAccept = (event: FormEvent) => {
     event.preventDefault();
-    console.log('send', user);
     onChange(user);
   };
 

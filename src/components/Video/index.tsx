@@ -53,9 +53,7 @@ export const Video = ({id}: VideoProps) => {
   
   const handlePlay = useCallback((fromKey?: string) => {
     const video = videoRef.current;
-    console.log(fromKey, 'paused?', video?.paused);
     if(video?.paused) {
-      console.log('handle play play');
       playVideo();
       emit('play', {currentTime: video.currentTime});
       setLastEvent({
@@ -64,7 +62,6 @@ export const Video = ({id}: VideoProps) => {
         currentTime: video.currentTime,
       });
     } else {
-      console.log('handle play pause');
       pauseVideo();
       emit('pause', {currentTime: video?.currentTime});
       video && setLastEvent({
@@ -271,7 +268,6 @@ export const Video = ({id}: VideoProps) => {
     const video = videoRef.current;
     if(video) {
       handleChangeTime(video.currentTime - 5);
-      console.log(video.currentTime);
     }
   }, [handleChangeTime]);
 
@@ -279,7 +275,6 @@ export const Video = ({id}: VideoProps) => {
     const video = videoRef.current;
     if(video) {
       handleChangeTime(video.currentTime + 5);
-      console.log(video.currentTime);
     }
   }, [handleChangeTime]);
 
@@ -297,7 +292,6 @@ export const Video = ({id}: VideoProps) => {
     // control keys
     const handleKeyUp = (e: KeyboardEvent) => {
       e.preventDefault();
-      console.log('key up', e.key);
       if(e.key === ' ' || e.code === 'Space') {
         handlePlay('from key');
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowLeft') {
@@ -377,7 +371,6 @@ export const Video = ({id}: VideoProps) => {
   }, [addReaction, socketId]);
 
   const handleEnded = () => {
-    console.log('Video ended', videoRef.current?.currentTime, videoRef.current?.duration);
     pauseVideo();
   };
 
