@@ -6,9 +6,10 @@ export interface ReactionProps {
   name: ReactionType;
   user: User;
   position?: number;
+  size?: number;
 }
 
-export const Reaction = ({id, name, user, position}: ReactionProps) => {
+export const Reaction = ({id, name, user, position, size}: ReactionProps) => {
   const [active, setActive] = useState<boolean>(true);
   const timeout = useRef<NodeJS.Timeout | null>();
 
@@ -29,7 +30,7 @@ export const Reaction = ({id, name, user, position}: ReactionProps) => {
   return(
     <div className={`absolute h-full top-0 left-2 flex items-end animate-bubble select-none`} style={{marginLeft: `${position}vw`}}>
       <div className="flex items-center">
-        <div className="text-[3.7vw]">
+        <div style={{fontSize: `${3.7 + (size || 0) * 0.3}vw`}}>
           {name}
         </div>
         {user.user &&

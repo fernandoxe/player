@@ -29,7 +29,7 @@ export const Video = ({id}: VideoProps) => {
   const [fullscreen, setFullscreen] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
-  const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number}[]>([]);
+  const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number, size?: number}[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [connectStatus, setConnectStatus] = useState<ConnectStatus>(ConnectStatus.disconnected);
   const [socketId, setSocketId] = useState<string>('');
@@ -130,13 +130,14 @@ export const Video = ({id}: VideoProps) => {
     }
   };
 
-  const addReaction = useCallback((name: ReactionType, user: User, position?: number) => {
+  const addReaction = useCallback((name: ReactionType, user: User, position?: number, size?: number) => {
     const id = Math.random() + Date.now() + '';
     const newReaction = {
       id,
       name,
       user,
       position,
+      size,
     };
     setReactions(prevReactions => [...prevReactions.slice(-19), newReaction]);
   }, []);
@@ -241,7 +242,7 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('reaction', (message: any) => {
       console.log(`User ${message.user.user} reacted with ${message.reaction}`);
-      addReaction(message.reaction, message.user, message.position);
+      addReaction(message.reaction, message.user, message.position, message.size);
     });
 
     socketRef.current.on('change-user', (message: any) => {
@@ -373,13 +374,15 @@ export const Video = ({id}: VideoProps) => {
 
   const handleReaction = useCallback((name: ReactionType) => {
     const position = Math.floor(Math.random() * 10);
+    const size = Math.floor(Math.random() * 10);
     emit('reaction', {
       reaction: name,
       currentTime: videoRef.current?.currentTime,
       user,
       position,
+      size,
     });
-    addReaction(name, {id: socketId, user}, position);
+    addReaction(name, {id: socketId, user}, position, size);
   }, [addReaction, emit, socketId, user]);
 
   const handleEnded = () => {
@@ -421,6 +424,7 @@ export const Video = ({id}: VideoProps) => {
           name={reaction.name}
           user={reaction.user}
           position={reaction.position}
+          size={reaction.size}
         />
       ))}
       {loadedMetadata && showControls &&
