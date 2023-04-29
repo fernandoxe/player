@@ -303,6 +303,7 @@ export const Video = ({id}: VideoProps) => {
     // control keys
     const handleKeyUp = (e: KeyboardEvent) => {
       e.preventDefault();
+      if(document.activeElement?.tagName === 'INPUT') return;
       if(e.key === ' ' || e.code === 'Space') {
         handlePlay();
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowLeft') {
