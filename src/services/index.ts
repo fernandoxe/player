@@ -13,3 +13,11 @@ export const getTimeFormatted = (time: number) => {
     return `${Number(minutes)}:${seconds}`;
   }
 };
+
+export const getSavedUser = () => {
+  return localStorage.getItem('user') || '';
+};
+
+export const saveUser = (user: string) => {
+  localStorage.setItem('user', user);
+};

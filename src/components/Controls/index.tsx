@@ -11,7 +11,7 @@ import { SubtitlesMenu } from './SubtitlesMenu';
 import { ReactionType, SubtitleLang, ConnectStatus } from '../../interfaces';
 import { Progress } from './Progress';
 import { Reactions } from './Reactions';
-import { getTimeProgress } from '../services';
+import { getTimeProgress } from '../../services';
 
 const connectStyles: {[key in ConnectStatus]: string} = {
   connected: 'text-purple-500',
@@ -28,7 +28,7 @@ export interface ControlsProps {
   lang: SubtitleLang;
   play: boolean;
   fullscreen: boolean;
-  connect: ConnectStatus;
+  connectStatus: ConnectStatus;
   onPlay: () => void;
   onChangeTime: (time: number) => void;
   onReleaseTime: (time: number) => void;
@@ -47,7 +47,7 @@ export const Controls = ({
   lang,
   play,
   fullscreen,
-  connect,
+  connectStatus,
   onPlay,
   onChangeTime,
   onReleaseTime,
@@ -144,9 +144,9 @@ export const Controls = ({
           <button
             className="outline-none w-6"
             onClick={handleConnect}
-            disabled={connect === ConnectStatus.connected || connect === ConnectStatus.connecting || connect === ConnectStatus.reconnecting}
+            disabled={connectStatus === ConnectStatus.connected || connectStatus === ConnectStatus.connecting || connectStatus === ConnectStatus.reconnecting}
           >
-            <div className={connectStyles[connect]}>
+            <div className={connectStyles[connectStatus]}>
               <GroupIcon />
             </div>
           </button>

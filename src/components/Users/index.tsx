@@ -3,7 +3,7 @@ import { ReactComponent as PauseIcon } from '../../icons/pause_fill.svg';
 import { ReactComponent as PlayIcon } from '../../icons/play_fill.svg';
 import { ReactComponent as LineEndCircleIcon } from '../../icons/line_end_circle_fill.svg';
 import { User } from '../../interfaces';
-import { getTimeFormatted } from '../services';
+import { getTimeFormatted } from '../../services';
 
 export interface UsersProps {
   users: User[];

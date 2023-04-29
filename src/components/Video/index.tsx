@@ -5,6 +5,7 @@ import { Controls } from '../Controls';
 import { EditUser } from '../EditUser';
 import { Reaction } from '../Reaction';
 import { Users } from '../Users';
+import { getSavedUser, saveUser } from '../../services';
 
 const MEDIA_HOST = process.env.REACT_APP_MEDIA_HOST;
 const WEBSOCKETS_HOST = process.env.REACT_APP_WEBSOCKETS_HOST || '/';
@@ -30,10 +31,11 @@ export const Video = ({id}: VideoProps) => {
   const [canPlay, setCanPlay] = useState(false);
   const [reactions, setReactions] = useState<{id: string; name: ReactionType; user: User; position?: number}[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [connect, setConnect] = useState<ConnectStatus>(ConnectStatus.disconnected);
+  const [connectStatus, setConnectStatus] = useState<ConnectStatus>(ConnectStatus.disconnected);
   const [socketId, setSocketId] = useState<string>('');
   const [lastEvent, setLastEvent] = useState<{user: User; event: string; currentTime: number}>();
   const [videoName, setVideoName] = useState<string>('');
+  const [user, setUser] = useState<string>(getSavedUser());
 
   const playVideo = useCallback(() => {
     setPlay(true);
@@ -50,14 +52,23 @@ export const Video = ({id}: VideoProps) => {
     parsedPausedTimes[id] = videoRef.current?.ended ? 0 : Math.floor(videoRef.current?.currentTime || 0);
     localStorage.setItem('pausedTimes', JSON.stringify(parsedPausedTimes));
   }, [id]);
+
+  const emit = useCallback((message: string, data?: any) => {
+    if(socketRef.current) {
+      socketRef.current.emit(message, data);
+    }
+  }, []);
   
-  const handlePlay = useCallback((fromKey?: string) => {
+  const handlePlay = useCallback(() => {
     const video = videoRef.current;
     if(video?.paused) {
       playVideo();
       emit('play', {currentTime: video.currentTime});
       setLastEvent({
-        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        user: {
+          id: socketId,
+          user,
+        },
         event: 'play',
         currentTime: video.currentTime,
       });
@@ -65,12 +76,15 @@ export const Video = ({id}: VideoProps) => {
       pauseVideo();
       emit('pause', {currentTime: video?.currentTime});
       video && setLastEvent({
-        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        user: {
+          id: socketId,
+          user,
+        },
         event: 'pause',
         currentTime: video.currentTime,
       });
     }
-  }, [playVideo, pauseVideo, socketId]);
+  }, [playVideo, pauseVideo, emit, socketId, user]);
 
   const changeTime = useCallback((time: number) => {
     if(videoRef.current) {
@@ -84,18 +98,21 @@ export const Video = ({id}: VideoProps) => {
       changeTime(time);
       emit('change-time', {currentTime: time});
       setLastEvent({
-        user: {id: socketId, user: localStorage.getItem('username') || ''},
+        user: {
+          id: socketId,
+          user,
+        },
         event: 'change-time',
         currentTime: time,
       });
-      console.log('changed time to', videoRef.current?.currentTime);
+      console.log('Changed time to', videoRef.current?.currentTime);
     }
-  }, [changeTime, socketId]);
+  }, [changeTime, emit, socketId, user]);
 
   const handleReleaseTime = useCallback((time: number) => {
-    console.log('relesased time at', time);
+    console.log('Released time at', time);
     emit('change-time', {currentTime: time});
-  }, []);
+  }, [emit]);
 
   const handleChangeSubtitles = (lang: SubtitleLang) => {
     localStorage.setItem('lang', lang);
@@ -129,14 +146,15 @@ export const Video = ({id}: VideoProps) => {
   }, []);
 
   const handleConnect = useCallback(() => {
-    const username = localStorage.getItem('username') || '';
-    if(!username && !socketRef.current) {
+    const user = getSavedUser();
+    if(!user && !socketRef.current) {
+      console.log('Show edit user', user, socketRef.current);
       setShowEditUser(true);
       return;
     }
 
     if(!socketRef.current?.connected) {
-      setConnect(ConnectStatus.connecting);
+      setConnectStatus(ConnectStatus.connecting);
       socketRef.current = io(WEBSOCKETS_HOST, {
         reconnectionAttempts: 10,
         timeout: 10000,
@@ -145,7 +163,7 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.on('connect', () => {
       console.log('Connected', socketRef.current?.id);
-      emit('join', {room: id});
+      emit('join', {room: id, user});
       setSocketId(socketRef.current?.id || '');
     });
 
@@ -159,24 +177,24 @@ export const Video = ({id}: VideoProps) => {
 
     socketRef.current.io.on('reconnect_attempt', (attempt) => {
       console.log('Reconnect attempt', attempt);
-      if(attempt === 1) setConnect(ConnectStatus.reconnecting);
+      if(attempt === 1) setConnectStatus(ConnectStatus.reconnecting);
     });
 
     socketRef.current.io.on('reconnect_failed', () => {
       console.log('Reconnect attempts failed');
-      setConnect(ConnectStatus.error);
+      setConnectStatus(ConnectStatus.error);
     });
 
     socketRef.current.on('connected', (message) => {
       console.log(`Connected to room ${message.room}`);
       console.log(`Users in room ${message.users.map((user: any) => user.user)}`);
       refreshUsers(message.users);
-      setConnect(ConnectStatus.connected);
+      setConnectStatus(ConnectStatus.connected);
     });
 
     socketRef.current.on('disconnect', (reason) => {
       console.log('Disconnected', reason);
-      setConnect(ConnectStatus.reconnecting);
+      setConnectStatus(ConnectStatus.reconnecting);
     });
 
     socketRef.current.on('user-connected', (message) => {
@@ -231,14 +249,7 @@ export const Video = ({id}: VideoProps) => {
       refreshUsers(message.users);
     });
 
-  }, [changeTime, id, pauseVideo, playVideo, addReaction, refreshUsers]);
-
-  const emit = (message: string, data?: any) => {
-    if(socketRef.current) {
-      const username = localStorage.getItem('username') || '';
-      socketRef.current.emit(message, {user: username, ...data});
-    }
-  };
+  }, [changeTime, pauseVideo, playVideo, addReaction, refreshUsers, emit, id]);
 
   const handleFullscreen = useCallback(() => {
     const fullscreenContainer = videoContainerRef.current;
@@ -293,7 +304,7 @@ export const Video = ({id}: VideoProps) => {
     const handleKeyUp = (e: KeyboardEvent) => {
       e.preventDefault();
       if(e.key === ' ' || e.code === 'Space') {
-        handlePlay('from key');
+        handlePlay();
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowLeft') {
         handleRewind();
       } else if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
@@ -344,22 +355,22 @@ export const Video = ({id}: VideoProps) => {
     }, 2000);
   };
 
-  const handleEditUser = useCallback((user: string) => {
-    localStorage.setItem('username', user);
+  const handleEditUser = useCallback((newUser: string) => {
+    saveUser(newUser);
+    setUser(newUser);
     setShowEditUser(false);
     if(socketRef.current?.connected) {
-      emit('change-user');
+      emit('change-user', {user: newUser});
     } else {
       handleConnect();
     }
-  }, [handleConnect]);
+  }, [handleConnect, emit]);
 
   const handleEditUserClose = () => {
     setShowEditUser(false);
   };
 
   const handleReaction = useCallback((name: ReactionType) => {
-    const user = localStorage.getItem('username') || '';
     const position = Math.floor(Math.random() * 10);
     emit('reaction', {
       reaction: name,
@@ -368,7 +379,7 @@ export const Video = ({id}: VideoProps) => {
       position,
     });
     addReaction(name, {id: socketId, user}, position);
-  }, [addReaction, socketId]);
+  }, [addReaction, emit, socketId, user]);
 
   const handleEnded = () => {
     pauseVideo();
@@ -436,7 +447,7 @@ export const Video = ({id}: VideoProps) => {
             lang={lang}
             play={play}
             fullscreen={fullscreen}
-            connect={connect}
+            connectStatus={connectStatus}
             onPlay={handlePlay}
             onChangeTime={handleChangeTime}
             onReleaseTime={handleReleaseTime}
@@ -451,6 +462,7 @@ export const Video = ({id}: VideoProps) => {
       }
       {showEditUser &&
         <EditUser
+          user={user}
           onChange={handleEditUser}
           onClose={handleEditUserClose}
         />
