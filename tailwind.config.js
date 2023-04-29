@@ -9,6 +9,8 @@ module.exports = {
       animation: {
         bubble: 'bubble 2.8s linear forwards',
         heart: 'heart 1s linear infinite forwards',
+        'slide-up': 'slide-up 0.3s',
+        'slide-down': 'slide-down 0.3s',
       },
       keyframes: {
         bubble: {
@@ -32,6 +34,22 @@ module.exports = {
           },
           '100%': {
             opacity: 1,
+          },
+        },
+        'slide-up': {
+          '0%': {
+            transform: 'translateY(100%)',
+          },
+          '100%': {
+            transform: 'translateY(0)',
+          },
+        },
+        'slide-down': {
+          '0%': {
+            transform: 'translateY(-100%)',
+          },
+          '100%': {
+            transform: 'translateY(0)',
           },
         },
       },

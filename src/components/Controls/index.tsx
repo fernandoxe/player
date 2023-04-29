@@ -103,7 +103,7 @@ export const Controls = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 px-2 py-4 from-purple-900/50 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
+    <div className="flex flex-col animate-slide-up gap-4 px-2 py-4 from-purple-900/30 to-transparent bg-gradient-to-t absolute left-0 bottom-0 w-full select-none cursor-default">
       <Reactions
         onReaction={handleReaction}
       />

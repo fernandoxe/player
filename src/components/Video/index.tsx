@@ -354,7 +354,7 @@ export const Video = ({id}: VideoProps) => {
     if(videoRef.current?.paused) return;
     timeoutRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 2000);
+    }, 2300);
   };
 
   const handleEditUser = useCallback((newUser: string) => {
@@ -430,7 +430,7 @@ export const Video = ({id}: VideoProps) => {
       {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
           {videoName &&
-            <div className="flex justify-between absolute top-0 left-0 right-0 px-2 py-4 from-transparent to-purple-900/50 bg-gradient-to-t select-none">
+            <div className="flex justify-between animate-slide-down absolute top-0 left-0 right-0 px-2 py-4 from-transparent to-purple-900/30 bg-gradient-to-t select-none">
               <div className="text-xs">
                 {videoName}
               </div>
