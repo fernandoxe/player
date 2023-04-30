@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { ReactionType, SubtitleLang, User, ConnectStatus } from '../../interfaces';
 import { Controls } from '../Controls';
@@ -19,6 +19,7 @@ export const Video = ({id}: VideoProps) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+  const clickTimestampRef = useRef<number>(0);
   const [loadedMetadata, setLoadedMetadata] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -37,11 +38,21 @@ export const Video = ({id}: VideoProps) => {
   const [videoName, setVideoName] = useState<string>('');
   const [user, setUser] = useState<string>(getSavedUser());
 
+  const handleMouseMove = useCallback((event?: MouseEvent<HTMLDivElement>) => {
+    if(event && event.timeStamp - clickTimestampRef.current < 50) return; // prevent click and mousemove at the same time
+    setShowControls(true);
+    clearTimeout(timeoutRef.current || 0);
+    // if(videoRef.current?.paused) return;
+    timeoutRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 2300);
+  }, []);
+
   const playVideo = useCallback(() => {
     setPlay(true);
     videoRef.current?.play();
     handleMouseMove();
-  }, []);
+  }, [handleMouseMove]);
 
   const pauseVideo = useCallback(() => {
     setPlay(false);
@@ -51,7 +62,7 @@ export const Video = ({id}: VideoProps) => {
     const parsedPausedTimes = JSON.parse(pausedTimes);
     parsedPausedTimes[id] = videoRef.current?.ended ? 0 : Math.floor(videoRef.current?.currentTime || 0);
     localStorage.setItem('pausedTimes', JSON.stringify(parsedPausedTimes));
-  }, [id]);
+  }, [handleMouseMove, id]);
 
   const emit = useCallback((message: string, data?: any) => {
     if(socketRef.current) {
@@ -91,7 +102,7 @@ export const Video = ({id}: VideoProps) => {
       videoRef.current.currentTime = time;
       handleMouseMove(); // to show controls on progress change from touch devices
     }
-  }, []);
+  }, [handleMouseMove]);
 
   const handleChangeTime = useCallback((time: number) => {
     if(videoRef.current) {
@@ -111,8 +122,8 @@ export const Video = ({id}: VideoProps) => {
 
   const handleReleaseTime = useCallback((time: number) => {
     console.log('Released time at', time);
-    emit('change-time', {currentTime: time});
-  }, [emit]);
+    // emit('change-time', {currentTime: time});
+  }, []);
 
   const handleChangeSubtitles = (lang: SubtitleLang) => {
     localStorage.setItem('lang', lang);
@@ -348,15 +359,6 @@ export const Video = ({id}: VideoProps) => {
     setCurrentTime(videoRef.current?.currentTime ?? 0);
   }, []);
 
-  const handleMouseMove = () => {
-    setShowControls(true);
-    clearTimeout(timeoutRef.current || 0);
-    if(videoRef.current?.paused) return;
-    timeoutRef.current = setTimeout(() => {
-      setShowControls(false);
-    }, 2300);
-  };
-
   const handleEditUser = useCallback((newUser: string) => {
     saveUser(newUser);
     setUser(newUser);
@@ -373,6 +375,7 @@ export const Video = ({id}: VideoProps) => {
   };
 
   const handleReaction = useCallback((name: ReactionType) => {
+    handleMouseMove();
     const position = Math.floor(Math.random() * 10);
     const size = Math.floor(Math.random() * 10);
     emit('reaction', {
@@ -383,17 +386,28 @@ export const Video = ({id}: VideoProps) => {
       size,
     });
     addReaction(name, {id: socketId, user}, position, size);
-  }, [addReaction, emit, socketId, user]);
+  }, [addReaction, emit, handleMouseMove, socketId, user]);
 
   const handleEnded = () => {
     pauseVideo();
   };
+
+  const handleContainerClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
+    clickTimestampRef.current = event.timeStamp;
+    clearTimeout(timeoutRef.current || 0);
+    if(showControls) {
+      setShowControls(false);
+    } else {
+      handleMouseMove();
+    }
+  }, [handleMouseMove, showControls]);
 
   return (
     <div
       className={`relative flex items-center overflow-hidden bg-black ${!showControls ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       // onTouchStart={handleMouseMove}
+      onClick={handleContainerClick}
       ref={videoContainerRef}
     >
       <div className="w-full h-full flex justify-center">
@@ -430,7 +444,10 @@ export const Video = ({id}: VideoProps) => {
       {loadedMetadata && showControls &&
         <div className="absolute top-0 left-0 w-full h-full">
           {videoName &&
-            <div className="flex justify-between animate-slide-down absolute top-0 left-0 right-0 px-2 py-4 from-transparent to-purple-900/30 bg-gradient-to-t select-none">
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex justify-between animate-slide-down absolute top-0 left-0 right-0 px-2 py-4 from-transparent to-purple-900/30 bg-gradient-to-t select-none"
+            >
               <div className="text-xs">
                 {videoName}
               </div>
