@@ -42,7 +42,7 @@ export const Video = ({id}: VideoProps) => {
     if(event && event.timeStamp - clickTimestampRef.current < 50) return; // prevent click and mousemove at the same time
     setShowControls(true);
     clearTimeout(timeoutRef.current || 0);
-    // if(videoRef.current?.paused) return;
+    if(videoRef.current?.paused) return; // don't hide controls if video is paused
     timeoutRef.current = setTimeout(() => {
       setShowControls(false);
     }, 2300);
